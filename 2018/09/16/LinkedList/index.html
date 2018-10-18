@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="No accumulation of thousands of miles"/>
+  <meta name="description" content="LinkedList的源码分析"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/2018/10/16/LinkedList/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2018/09/16/LinkedList/"/>
 
 
 
@@ -90,7 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title>  - Brooke-Paul </title>
+    <title> LinkedList的源码分析 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -116,20 +116,20 @@
         </li>
       </a>
     
-      <a href="/categories">
-        <li class="mobile-menu-item">
-          
-          
-            分类
-          
-        </li>
-      </a>
-    
-      <a href="/archives">
+      <a href="/archives/">
         <li class="mobile-menu-item">
           
           
             归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
           
         </li>
       </a>
@@ -139,6 +139,15 @@
           
           
             标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
           
         </li>
       </a>
@@ -165,19 +174,19 @@
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/categories">
+          <a class="menu-item-link" href="/archives/">
             
             
-              分类
+              归档
             
           </a>
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/archives">
+          <a class="menu-item-link" href="/categories/">
             
             
-              归档
+              分类
             
           </a>
         </li>
@@ -187,6 +196,15 @@
             
             
               标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
             
           </a>
         </li>
@@ -206,14 +224,20 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          
+          LinkedList的源码分析
         
       </h1>
 
       <div class="post-meta">
         <span class="post-time">
-          2018-10-16
+          2018-09-16
         </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java/">java</a>
+            
+          </span>
         
         
       </div>
@@ -224,7 +248,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#LinkedList的源码分析"><span class="toc-text">LinkedList的源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-简介"><span class="toc-text">LinkedList 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#元素的插入与获取"><span class="toc-text">元素的插入与获取</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#addFirst-和-addLast"><span class="toc-text">addFirst() 和 addLast()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getFirst-和-getLast"><span class="toc-text">getFirst() 和 getLast()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#由此得出结论："><span class="toc-text">由此得出结论：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#元素的删除"><span class="toc-text">元素的删除</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#removeFirst-和-removeLast"><span class="toc-text">removeFirst() 和 removeLast()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-用作堆栈"><span class="toc-text">LinkedList 用作堆栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-用作队列"><span class="toc-text">LinkedList 用作队列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-用作队列-1"><span class="toc-text">LinkedList 用作队列</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-简介"><span class="toc-text">LinkedList 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#元素的插入与获取"><span class="toc-text">元素的插入与获取</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#addFirst-和-addLast"><span class="toc-text">addFirst() 和 addLast()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#getFirst-和-getLast"><span class="toc-text">getFirst() 和 getLast()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#由此得出结论："><span class="toc-text">由此得出结论：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#元素的删除"><span class="toc-text">元素的删除</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#removeFirst-和-removeLast"><span class="toc-text">removeFirst() 和 removeLast()</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-用作堆栈"><span class="toc-text">LinkedList 用作堆栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-用作队列"><span class="toc-text">LinkedList 用作队列</span></a></li></ol>
     </div>
   </div>
 
@@ -232,7 +256,7 @@
 
     <div class="post-content">
       
-        <h1 id="LinkedList的源码分析"><a href="#LinkedList的源码分析" class="headerlink" title="LinkedList的源码分析"></a>LinkedList的源码分析</h1><h2 id="LinkedList-简介"><a href="#LinkedList-简介" class="headerlink" title="LinkedList 简介"></a>LinkedList 简介</h2><p><code>LinkedList</code> 是继承于<code>AbstractSequentialList</code>的双向链表， 它可以被当做堆栈，队列或双端队列使用。<br><code>LinkedList</code> 实现了<code>List</code>接口， 能对它进行队列操作。<br><code>LinkedList</code> 实现了<code>Cloneable</code>接口， 覆盖了函数<code>clone()</code>, 支持克隆。<br><code>LinkedList</code> 实现了<code>Deque</code>接口， 能将 <code>LinkedList</code>当做双端队列使用。<br><code>LinkedList</code> 实现了<code>Serializable</code>接口，意味着支持序列化， 便于在网络中传输和保存。  </p>
+        <h2 id="LinkedList-简介"><a href="#LinkedList-简介" class="headerlink" title="LinkedList 简介"></a>LinkedList 简介</h2><p><code>LinkedList</code> 是继承于<code>AbstractSequentialList</code>的双向链表， 它可以被当做堆栈，队列或双端队列使用。<br><code>LinkedList</code> 实现了<code>List</code>接口， 能对它进行队列操作。<br><code>LinkedList</code> 实现了<code>Cloneable</code>接口， 覆盖了函数<code>clone()</code>, 支持克隆。<br><code>LinkedList</code> 实现了<code>Deque</code>接口， 能将 <code>LinkedList</code>当做双端队列使用。<br><code>LinkedList</code> 实现了<code>Serializable</code>接口，意味着支持序列化， 便于在网络中传输和保存。  </p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedList</span>&lt;<span class="title">E</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractSequentialList</span>&lt;<span class="title">E</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">Deque</span>&lt;<span class="title">E</span>&gt;, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p><code>LinkedList</code> 是采用链表的方式来实现<code>List</code>接口的,它本身有自己特定的方法，  如: <code>addFirst()</code>,<code>addLast()</code>,<code>getFirst()</code>,<code>getLast()</code>,<code>removeFirst()</code>，<code>removeFirst()</code>，<code>removeLast()</code>。</p>
 <h2 id="元素的插入与获取"><a href="#元素的插入与获取" class="headerlink" title="元素的插入与获取"></a>元素的插入与获取</h2><h4 id="addFirst-和-addLast"><a href="#addFirst-和-addLast" class="headerlink" title="addFirst() 和 addLast()"></a>addFirst() 和 addLast()</h4><p>直接插入头部元素 和 尾部元素实现方式<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addFirst</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    linkFirst(e);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">linkFirst</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Node&lt;E&gt; f = first;</span><br><span class="line">    <span class="keyword">final</span> Node&lt;E&gt; newNode = <span class="keyword">new</span> Node&lt;&gt;(<span class="keyword">null</span>, e, f); <span class="comment">//构造头部对象</span></span><br><span class="line">    first = newNode;</span><br><span class="line">    <span class="keyword">if</span> (f == <span class="keyword">null</span>) <span class="comment">//如果f为空，则first == last</span></span><br><span class="line">        last = newNode;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        f.prev = newNode;  <span class="comment">//否则 头节点为newNode</span></span><br><span class="line">    size++;</span><br><span class="line">    modCount++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addLast</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">        linkLast(e);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//默认的添加方式也是由此方法实现    </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">linkLast</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Node&lt;E&gt; l = last;</span><br><span class="line">        <span class="keyword">final</span> Node&lt;E&gt; newNode = <span class="keyword">new</span> Node&lt;&gt;(l, e, <span class="keyword">null</span>); <span class="comment">//构造尾部对象</span></span><br><span class="line">        last = newNode;</span><br><span class="line">        <span class="keyword">if</span> (l == <span class="keyword">null</span>) <span class="comment">//如果l为空，则first == last</span></span><br><span class="line">            first = newNode;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            l.next = newNode; <span class="comment">//否则，尾节点为newNode</span></span><br><span class="line">        size++;</span><br><span class="line">        modCount++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
@@ -246,7 +270,7 @@
 <p><code>LinkedList</code> 用作堆栈 输出结果为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">插入第<span class="number">1</span>个元素,值为 <span class="number">1</span></span><br><span class="line">插入第<span class="number">2</span>个元素,值为 <span class="number">2</span></span><br><span class="line">插入第<span class="number">3</span>个元素,值为 <span class="number">3</span></span><br><span class="line">插入第<span class="number">4</span>个元素,值为 <span class="number">4</span></span><br><span class="line">插入第<span class="number">5</span>个元素,值为 <span class="number">5</span></span><br><span class="line">取出第一个元素 <span class="number">5</span></span><br><span class="line">取出第一个元素 <span class="number">5</span></span><br><span class="line">输出顺序为 <span class="number">4</span></span><br><span class="line">输出顺序为 <span class="number">3</span></span><br><span class="line">输出顺序为 <span class="number">2</span></span><br><span class="line">输出顺序为 <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
 <h2 id="LinkedList-用作队列"><a href="#LinkedList-用作队列" class="headerlink" title="LinkedList 用作队列"></a>LinkedList 用作队列</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * LinkedList 实现先进先出队列</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QueueDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Queue queue = <span class="keyword">new</span> LinkedList();</span><br><span class="line">        <span class="comment">//offer()方法是往队列尾部加入元素</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            queue.offer(i + <span class="number">1</span>);</span><br><span class="line">            System.out.println(<span class="string">"插入第"</span>+ (i + <span class="number">1</span>) +<span class="string">"个元素,"</span> + <span class="string">"值为 "</span> + (i + <span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (!queue.isEmpty()) &#123;</span><br><span class="line">            System.out.println(<span class="string">"输出顺序 "</span> + queue.poll());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>输出结果为<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">插入第<span class="number">1</span>个元素,值为 <span class="number">1</span></span><br><span class="line">插入第<span class="number">2</span>个元素,值为 <span class="number">2</span></span><br><span class="line">插入第<span class="number">3</span>个元素,值为 <span class="number">3</span></span><br><span class="line">插入第<span class="number">4</span>个元素,值为 <span class="number">4</span></span><br><span class="line">插入第<span class="number">5</span>个元素,值为 <span class="number">5</span></span><br><span class="line">输出顺序 <span class="number">1</span></span><br><span class="line">输出顺序 <span class="number">2</span></span><br><span class="line">输出顺序 <span class="number">3</span></span><br><span class="line">输出顺序 <span class="number">4</span></span><br><span class="line">输出顺序 <span class="number">5</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="LinkedList-用作队列-1"><a href="#LinkedList-用作队列-1" class="headerlink" title="LinkedList 用作队列"></a>LinkedList 用作队列</h2>
+
       
     </div>
 
@@ -263,19 +287,19 @@
     
       <footer class="post-footer">
         
+          <div class="post-tags">
+            
+              <a href="/tags/LinkedList/">LinkedList</a>
+            
+          </div>
+        
         
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/10/16/LinkedHashMap/">
-        <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default"></span>
-        <span class="prev-text nav-mobile">上一篇</span>
-      </a>
     
-    
-      <a class="next" href="/2018/10/16/ConcurrentHashMap/">
-        <span class="next-text nav-default"></span>
+      <a class="next" href="/2018/09/15/LinkedHashMap/">
+        <span class="next-text nav-default">LinkedHashMap的源码分析</span>
         <span class="prev-text nav-mobile">下一篇</span>
         <i class="iconfont icon-right"></i>
       </a>

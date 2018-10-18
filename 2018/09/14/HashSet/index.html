@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="No accumulation of thousands of miles"/>
+  <meta name="description" content="HashSet的源码分析"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/2018/10/16/HashSet/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2018/09/14/HashSet/"/>
 
 
 
@@ -90,7 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title>  - Brooke-Paul </title>
+    <title> HashSet的源码分析 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -116,20 +116,20 @@
         </li>
       </a>
     
-      <a href="/categories">
-        <li class="mobile-menu-item">
-          
-          
-            分类
-          
-        </li>
-      </a>
-    
-      <a href="/archives">
+      <a href="/archives/">
         <li class="mobile-menu-item">
           
           
             归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
           
         </li>
       </a>
@@ -139,6 +139,15 @@
           
           
             标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
           
         </li>
       </a>
@@ -165,19 +174,19 @@
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/categories">
+          <a class="menu-item-link" href="/archives/">
             
             
-              分类
+              归档
             
           </a>
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/archives">
+          <a class="menu-item-link" href="/categories/">
             
             
-              归档
+              分类
             
           </a>
         </li>
@@ -187,6 +196,15 @@
             
             
               标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
             
           </a>
         </li>
@@ -206,14 +224,22 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          
+          HashSet的源码分析
         
       </h1>
 
       <div class="post-meta">
         <span class="post-time">
-          2018-10-16
+          2018-09-14
         </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java/">java</a>
+            
+              <a href="/categories/java/collection/">collection</a>
+            
+          </span>
         
         
       </div>
@@ -224,7 +250,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HashSet的源码分析"><span class="toc-text">HashSet的源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HashSet-简介"><span class="toc-text">HashSet 简介</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HashSet-简介"><span class="toc-text">HashSet 简介</span></a></li></ol>
     </div>
   </div>
 
@@ -232,7 +258,7 @@
 
     <div class="post-content">
       
-        <h1 id="HashSet的源码分析"><a href="#HashSet的源码分析" class="headerlink" title="HashSet的源码分析"></a>HashSet的源码分析</h1><h2 id="HashSet-简介"><a href="#HashSet-简介" class="headerlink" title="HashSet 简介"></a>HashSet 简介</h2><p><code>HashSet</code> 是一个没有重复元素的集合。<br>它是由 <code>HashMap</code> 实现的， 无序且允许空值。<br><code>HashSet</code> 是非线程同步的，没有提供数据访问保护，在多线程环境中容易导致多个线程更改数据后造成数据脏读。  </p>
+        <h2 id="HashSet-简介"><a href="#HashSet-简介" class="headerlink" title="HashSet 简介"></a>HashSet 简介</h2><p><code>HashSet</code> 是一个没有重复元素的集合。<br>它是由 <code>HashMap</code> 实现的， 无序且允许空值。<br><code>HashSet</code> 是非线程同步的，没有提供数据访问保护，在多线程环境中容易导致多个线程更改数据后造成数据脏读。  </p>
 <p><code>HashSet</code> 的添加方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//map是一个HashMap&lt;E, Object&gt;对象，HashSet是由一个HashMap实例支持的</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> HashMap&lt;E,Object&gt; map;</span><br><span class="line"><span class="comment">//PRESENT是一个static final Object对象，用来作为HashMap中的value值。</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object PRESENT = <span class="keyword">new</span> Object();</span><br><span class="line"><span class="comment">//熟悉hashmap的实现方式的话很容易理解put方法，对象作为key值，不允许重复，value使用 PRESENT。   </span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> map.put(e, PRESENT)==<span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p><code>HashSet</code> 的查找方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//如果此set包含指定元素，则返回 true</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> map.containsKey(o);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p><code>HashSet</code> 的清空与移除方法</p>
@@ -255,13 +281,25 @@
     
       <footer class="post-footer">
         
+          <div class="post-tags">
+            
+              <a href="/tags/HashSet/">HashSet</a>
+            
+          </div>
+        
         
         
   <nav class="post-nav">
     
+      <a class="prev" href="/2018/09/15/LinkedHashMap/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">LinkedHashMap的源码分析</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
     
-      <a class="next" href="/2018/10/16/LinkedHashMap/">
-        <span class="next-text nav-default"></span>
+    
+      <a class="next" href="/2018/09/13/HashMap/">
+        <span class="next-text nav-default">HashMap的源码分析</span>
         <span class="prev-text nav-mobile">下一篇</span>
         <i class="iconfont icon-right"></i>
       </a>

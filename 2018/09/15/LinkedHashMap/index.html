@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="No accumulation of thousands of miles"/>
+  <meta name="description" content="LinkedHashMap的源码分析"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/2018/10/16/LinkedHashMap/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2018/09/15/LinkedHashMap/"/>
 
 
 
@@ -90,7 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title>  - Brooke-Paul </title>
+    <title> LinkedHashMap的源码分析 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -116,20 +116,20 @@
         </li>
       </a>
     
-      <a href="/categories">
-        <li class="mobile-menu-item">
-          
-          
-            分类
-          
-        </li>
-      </a>
-    
-      <a href="/archives">
+      <a href="/archives/">
         <li class="mobile-menu-item">
           
           
             归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
           
         </li>
       </a>
@@ -139,6 +139,15 @@
           
           
             标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
           
         </li>
       </a>
@@ -165,19 +174,19 @@
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/categories">
+          <a class="menu-item-link" href="/archives/">
             
             
-              分类
+              归档
             
           </a>
         </li>
       
         <li class="menu-item">
-          <a class="menu-item-link" href="/archives">
+          <a class="menu-item-link" href="/categories/">
             
             
-              归档
+              分类
             
           </a>
         </li>
@@ -187,6 +196,15 @@
             
             
               标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
             
           </a>
         </li>
@@ -206,14 +224,20 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          
+          LinkedHashMap的源码分析
         
       </h1>
 
       <div class="post-meta">
         <span class="post-time">
-          2018-10-16
+          2018-09-15
         </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java/">java</a>
+            
+          </span>
         
         
       </div>
@@ -224,7 +248,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#LinkedHashMap-源码分析"><span class="toc-text">LinkedHashMap 源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedHashMap-简介"><span class="toc-text">LinkedHashMap 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#顺序展示效果示例代码"><span class="toc-text">顺序展示效果示例代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的添加"><span class="toc-text">LinkedHashMap的添加</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的删除"><span class="toc-text">LinkedHashMap的删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的查找"><span class="toc-text">LinkedHashMap的查找</span></a></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedHashMap-简介"><span class="toc-text">LinkedHashMap 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#顺序展示效果示例代码"><span class="toc-text">顺序展示效果示例代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的添加"><span class="toc-text">LinkedHashMap的添加</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的删除"><span class="toc-text">LinkedHashMap的删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedHashMap的查找"><span class="toc-text">LinkedHashMap的查找</span></a></li></ol></li></ol>
     </div>
   </div>
 
@@ -232,7 +256,7 @@
 
     <div class="post-content">
       
-        <h1 id="LinkedHashMap-源码分析"><a href="#LinkedHashMap-源码分析" class="headerlink" title="LinkedHashMap 源码分析"></a>LinkedHashMap 源码分析</h1><h2 id="LinkedHashMap-简介"><a href="#LinkedHashMap-简介" class="headerlink" title="LinkedHashMap 简介"></a>LinkedHashMap 简介</h2><p> <code>LinkedHashMap</code> 继承了 <code>HashMap</code>, 实现了<code>map</code>接口。<br> 所以 <code>LinkedHashMap</code> 包含了 <code>HashMap</code> 的所有功能， 它是一个关联数组，线程不安全，并且<code>key</code>值，<code>value</code>值允许为空。<br><code>LinkedHashMap</code> 与 <code>HashMap</code> 不同之处是它支持写入顺序排序，访问顺序排序。  </p>
+        <h2 id="LinkedHashMap-简介"><a href="#LinkedHashMap-简介" class="headerlink" title="LinkedHashMap 简介"></a>LinkedHashMap 简介</h2><p> <code>LinkedHashMap</code> 继承了 <code>HashMap</code>, 实现了<code>map</code>接口。<br> 所以 <code>LinkedHashMap</code> 包含了 <code>HashMap</code> 的所有功能， 它是一个关联数组，线程不安全，并且<code>key</code>值，<code>value</code>值允许为空。<br><code>LinkedHashMap</code> 与 <code>HashMap</code> 不同之处是它支持写入顺序排序，访问顺序排序。  </p>
 <h3 id="顺序展示效果示例代码"><a href="#顺序展示效果示例代码" class="headerlink" title="顺序展示效果示例代码"></a>顺序展示效果示例代码</h3> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Map map = <span class="keyword">new</span> LinkedHashMap();</span><br><span class="line">    map.put(<span class="string">"1"</span>, <span class="number">1</span>);</span><br><span class="line">    map.put(<span class="string">"2"</span>, <span class="number">2</span>);</span><br><span class="line">    map.put(<span class="string">"3"</span>, <span class="number">3</span>);</span><br><span class="line">    map.put(<span class="string">"4"</span>, <span class="number">4</span>);</span><br><span class="line">    map.put(<span class="string">"5"</span>, <span class="number">5</span>);</span><br><span class="line">    Iterator iterator = map.entrySet().iterator();</span><br><span class="line">    <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">        Map.Entry entry = (Map.Entry) iterator.next();</span><br><span class="line">        System.out.println(entry.getKey() + <span class="string">"::"</span> + entry.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(<span class="string">"accessOrder  设置为 true"</span>);</span><br><span class="line">    Map mapOrder = <span class="keyword">new</span> LinkedHashMap(<span class="number">15</span>, <span class="number">0.75f</span>, <span class="keyword">true</span>);</span><br><span class="line">    mapOrder.put(<span class="string">"1"</span>, <span class="number">1</span>);</span><br><span class="line">    mapOrder.put(<span class="string">"2"</span>, <span class="number">2</span>);</span><br><span class="line">    mapOrder.put(<span class="string">"3"</span>, <span class="number">3</span>);</span><br><span class="line">    mapOrder.put(<span class="string">"4"</span>, <span class="number">4</span>);</span><br><span class="line">    mapOrder.put(<span class="string">"5"</span>, <span class="number">5</span>);</span><br><span class="line">    mapOrder.get(<span class="string">"1"</span>);</span><br><span class="line">    Iterator iterator1 = mapOrder.entrySet().iterator();</span><br><span class="line">    <span class="keyword">while</span> (iterator1.hasNext()) &#123;</span><br><span class="line">        Map.Entry entry = (Map.Entry) iterator1.next();</span><br><span class="line">        System.out.println(entry.getKey() + <span class="string">"::"</span> + entry.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">返回的结果如下：  </span><br><span class="line">写入顺序排序</span><br><span class="line"><span class="number">1</span>::<span class="number">1</span></span><br><span class="line"><span class="number">2</span>::<span class="number">2</span></span><br><span class="line"><span class="number">3</span>::<span class="number">3</span></span><br><span class="line"><span class="number">4</span>::<span class="number">4</span></span><br><span class="line"><span class="number">5</span>::<span class="number">5</span></span><br><span class="line">accessOrder  设置为 <span class="keyword">true</span></span><br><span class="line">访问顺序排序</span><br><span class="line"><span class="number">2</span>::<span class="number">2</span></span><br><span class="line"><span class="number">3</span>::<span class="number">3</span></span><br><span class="line"><span class="number">4</span>::<span class="number">4</span></span><br><span class="line"><span class="number">5</span>::<span class="number">5</span></span><br><span class="line"><span class="number">1</span>::<span class="number">1</span></span><br></pre></td></tr></table></figure>
 <p>带着疑问剖析源码，<code>LinkedHashMap</code>的构造函数有五种：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//默认是false，则迭代时输出的顺序是插入节点的顺序。若为true，则输出的顺序是按照访问节点的顺序。</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">boolean</span> accessOrder;</span><br><span class="line"><span class="comment">//指定初始化时的容量，和扩容的加载因子</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedHashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">float</span> loadFactor)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(initialCapacity, loadFactor);</span><br><span class="line">    accessOrder = <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//指定初始化时的容量</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedHashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(initialCapacity);</span><br><span class="line">    accessOrder = <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedHashMap</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    accessOrder = <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//利用另一个Map 来构建</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedHashMap</span><span class="params">(Map&lt;? extends K, ? extends V&gt; m)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    accessOrder = <span class="keyword">false</span>;</span><br><span class="line">    putMapEntries(m, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//指定初始化时的容量，和扩容的加载因子，以及迭代输出节点的顺序</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedHashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">float</span> loadFactor,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">boolean</span> accessOrder)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(initialCapacity, loadFactor);</span><br><span class="line">    <span class="keyword">this</span>.accessOrder = accessOrder;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>构造函数和<code>HashMap</code>相比，就是增加了一个<code>accessOrder</code>参数。用于控制迭代时的节点顺序。    </p>
@@ -256,19 +280,25 @@
     
       <footer class="post-footer">
         
+          <div class="post-tags">
+            
+              <a href="/tags/LinkedHashMap/">LinkedHashMap</a>
+            
+          </div>
+        
         
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/10/16/HashSet/">
+      <a class="prev" href="/2018/09/16/LinkedList/">
         <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default"></span>
+        <span class="prev-text nav-default">LinkedList的源码分析</span>
         <span class="prev-text nav-mobile">上一篇</span>
       </a>
     
     
-      <a class="next" href="/2018/10/16/LinkedList/">
-        <span class="next-text nav-default"></span>
+      <a class="next" href="/2018/09/14/HashSet/">
+        <span class="next-text nav-default">HashSet的源码分析</span>
         <span class="prev-text nav-mobile">下一篇</span>
         <i class="iconfont icon-right"></i>
       </a>

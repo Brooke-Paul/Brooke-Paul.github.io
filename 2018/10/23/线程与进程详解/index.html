@@ -248,7 +248,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#线程与进程详解"><span class="toc-text">线程与进程详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#进程的定义"><span class="toc-text">进程的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#线程的定义"><span class="toc-text">线程的定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的介绍"><span class="toc-text">线程的介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的特点"><span class="toc-text">线程的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的实现方式"><span class="toc-text">线程的实现方式</span></a></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#进程的定义"><span class="toc-text">进程的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#线程的定义"><span class="toc-text">线程的定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的介绍"><span class="toc-text">线程的介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的特点"><span class="toc-text">线程的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#线程的实现方式"><span class="toc-text">线程的实现方式</span></a></li></ol></li></ol>
     </div>
   </div>
 
@@ -256,10 +256,8 @@
 
     <div class="post-content">
       
-        <h1 id="线程与进程详解"><a href="#线程与进程详解" class="headerlink" title="线程与进程详解"></a>线程与进程详解</h1><h2 id="进程的定义"><a href="#进程的定义" class="headerlink" title="进程的定义"></a>进程的定义</h2><pre><code>进程是指处于运行过程中的程序，并且具有一定的独立功能。进程是系统进行资源分配和调度的一个单位。  
-当程序进入内存运行时，即为进程。几乎所有的操作系统都支持多任务运行，而每个任务就是一个进程。
-当一个进程运行时，内部可以支持多个执行流程，而每个流程就是一个线程。    
-</code></pre><h2 id="线程的定义"><a href="#线程的定义" class="headerlink" title="线程的定义"></a>线程的定义</h2><h3 id="线程的介绍"><a href="#线程的介绍" class="headerlink" title="线程的介绍"></a>线程的介绍</h3><pre><code>线程也称为轻型进程，因为线程只能在单个进程的作用域中使用，所以创建线程比创建进程要廉价得多。
+        <h2 id="进程的定义"><a href="#进程的定义" class="headerlink" title="进程的定义"></a>进程的定义</h2><p>   进程是指处于运行过程中的程序，并且具有一定的独立功能。进程是系统进行资源分配和调度的一个单位。<br>   当程序进入内存运行时，即为进程。几乎所有的操作系统都支持多任务运行，而每个任务就是一个进程。<br>   当一个进程运行时，内部可以支持多个执行流程，而每个流程就是一个线程。    </p>
+<h2 id="线程的定义"><a href="#线程的定义" class="headerlink" title="线程的定义"></a>线程的定义</h2><h3 id="线程的介绍"><a href="#线程的介绍" class="headerlink" title="线程的介绍"></a>线程的介绍</h3><pre><code>线程也称为轻型进程，因为线程只能在单个进程的作用域中使用，所以创建线程比创建进程要廉价得多。
 线程是进程的组成部分，一个进程可以拥有多个线程，而一个线程只能属于单个进程。线程有自己的独立资源，比如栈，程序计数器，寄存器。
 线程可以与当前进程中的其他线程共享进程资源。
 </code></pre><h3 id="线程的特点"><a href="#线程的特点" class="headerlink" title="线程的特点"></a>线程的特点</h3><pre><code>线程之间可以协作完成任务。

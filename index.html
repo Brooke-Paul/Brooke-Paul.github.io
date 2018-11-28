@@ -228,6 +228,60 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2018/11/29/Volatile/">Volatile关键字解析</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-11-29
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java/">java</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 在介绍<code>Volatile</code>之前，先简单了解一下<code>java</code>内存模型。在<code>java</code>内存模型中规定，简称为<code>JMM</code>。</p>
+<h2 id="主内存和工作内存"><a href="#主内存和工作内存" class="headerlink" title="主内存和工作内存"></a>主内存和工作内存</h2><h3 id="主内存"><a href="#主内存" class="headerlink" title="主内存"></a>主内存</h3><p>存放数据共享的区域，数据可以在线程中共享，包括实例变量，静态变量等。线程在工作时，需要将主存中的数据拷贝到工作内存，线程之间的数据不可以共享，并且不能直接操作主内存或者其他线程工作内存中的数据。<br>这里所提到的主内存可以简单认为是堆内存，而工作内存可以简单认为是栈内存。</p>
+<h3 id="工作内存"><a href="#工作内存" class="headerlink" title="工作内存"></a>工作内存</h3><p>每个线程有自己的工作内存，各个线程之间不支持数据资源共享，线程使用的变量是从主内存的副本拷贝，线程所有的数据操作必须在工作内存中，无法直接获取主内存的数据，线程之间的变量值传递必须通过主内存来完成。</p>
+<h2 id="Volatile-原理"><a href="#Volatile-原理" class="headerlink" title="Volatile 原理"></a>Volatile 原理</h2><p>   <code>Java</code>语言提供了一种稍弱的同步机制，即<code>volatile</code>变量，确保变量的更新操作通知到其他线程。当线程变量被<code>volatile</code>修饰后，编译器会自动识别该变量属于线程共享，因此在读取<code>volatile</code>修饰的变量时总是读取最新的值。</p>
+<p>   在访问<code>volatile</code>变量时不会执行加锁操作，因此也就不会使执行线程阻塞，因此<code>volatile</code>变量是一种比<code>sychronized</code>关键字更轻量级的同步机制。</p>
+<h3 id="内存可见性"><a href="#内存可见性" class="headerlink" title="内存可见性"></a>内存可见性</h3><p>   变量在被<code>volatile</code>修饰后更改变量的值会立即被写回主存，同时会使其他线程工作内存的旧值失效，新值对于其他线程是可见的，因为<code>volatile</code>修饰的变量在每个线程中使用前都会去主内存中获取最新的值。<br>   虽然<code>volatile</code>修饰的值每次都会被线程获取到，但是并不能保证线程并发的安全性。因为忽略了原子性，<code>volatile</code>在执行时并不能保证原子性，对变量的操作可能就是很简单的 <code>i+=1</code>,但是底层需要多条字节码操作才能完成，在并发情况并不能保证原子性。</p>
+<h3 id="禁止指令重排序优化"><a href="#禁止指令重排序优化" class="headerlink" title="禁止指令重排序优化"></a>禁止指令重排序优化</h3><p>   指令重排序是指CPU在正确处理指令依赖(数据依赖)并且保障程序执行得到正确结果的情况下，调整代码的执行顺序，允许将多条指令不按照程序规定顺序分开发送给各相应电路单元处理。需要注意的是指令重排序不会影响到代码在单线程环境下的执行，会影响到多线程并发情况下执行的正确性。</p>
+<h3 id="使用条件"><a href="#使用条件" class="headerlink" title="使用条件"></a>使用条件</h3><p>如果让<code>volatile</code>保证原子性，必须符合以下两条规则：<br>1.运算结果并不依赖于变量的当前值，或者能够确保只有一个线程修改变量的值；<br>2.变量不需要与其他的状态变量共同参与不变约束；</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2018/10/23/线程与进程详解/">线程与进程详解</a>
         
       </h1>

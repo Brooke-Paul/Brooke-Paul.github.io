@@ -228,6 +228,65 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2018/12/10/CyclicBarrier/">java同步工具之CyclicBarrier</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-10
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java-并发/">java 并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="java并发之同步工具-CyclicBarrier"><a href="#java并发之同步工具-CyclicBarrier" class="headerlink" title="java并发之同步工具 CyclicBarrier"></a>java并发之同步工具 CyclicBarrier</h2><h3 id="CyclicBarrier循环屏障"><a href="#CyclicBarrier循环屏障" class="headerlink" title="CyclicBarrier循环屏障"></a>CyclicBarrier循环屏障</h3><p><code>CyclicBarrier</code>用于让一组线程运行并互相等待，直到共同到达一个公共屏障点 (<code>common barrier point</code>，又被称为同步点)，被屏障拦截的所有线程就会继续执行。</p>
+<p><code>CyclicBarrier</code>与<code>CountDownLatch</code>的功能非常类似。但一个<code>CyclicBarrier</code>实例在释放等待线程后可以继续使用。让下一批线程在屏障点等待。但<code>CountDownLatch</code>实例只能被使用一次。所以<code>CyclicBarrier</code>被称为循环 的 <code>barrier</code>。</p>
+<h3 id="CyclicBarrier类的用法"><a href="#CyclicBarrier类的用法" class="headerlink" title="CyclicBarrier类的用法"></a>CyclicBarrier类的用法</h3><p>构造方法</p>
+<p><code>CyclicBarrier(int parties)</code> 创建<code>CyclicBarrier</code>对象，<code>parties</code> 表示屏障拦截的线程数量。</p>
+<p><code>CyclicBarrier(int parties, Runnable barrierAction)</code> 创建 <code>CyclicBarrier</code>对象，该构造方法提供了一个<code>Runnable</code>参数，在一组线程中的最后一个线程到达之后，执行<code>Runnable</code>中的程序，再之后释放正在等待的线程。<code>Runnable</code>在屏障点上只运行一次。</p>
+<p>方法</p>
+<p><code>int await()</code> 通知<code>CyclicBarrier</code>实例，当前线程已经到达屏障点，然后当前线程将被阻塞。</p>
+<p><code>int await(long timeout, TimeUnit unit)</code>指定当前线程被阻塞的时间。</p>
+<p><code>int getNumberWaiting()</code>返回当前在屏障处等待的线程数。</p>
+<p><code>int getParties()</code>返回<code>CyclicBarrier</code>的需要拦截的线程数。</p>
+<p><code>boolean isBroken()</code> 查询此屏障是否处于损坏状态。</p>
+<p><code>void reset()</code> 将屏障重置为其初始状态。</p>
+<p>例如：所有的线程都到达共同屏障点后执行数据，可以用于分类数据求总和<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CyclicBarrierDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> parties = <span class="number">5</span>;</span><br><span class="line">        CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(parties, <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                System.out.println(currentThread().getName() + <span class="string">"所有线程执行完毕，结束"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; parties; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    System.out.println(currentThread().getName() + <span class="string">"准备执行"</span>);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                        System.out.println(currentThread().getName() + <span class="string">" 开始执行，等待别的线程执行完毕"</span>);</span><br><span class="line">                        cyclicBarrier.await();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        System.out.println(currentThread().getName() + <span class="string">" 执行完毕，等待别的线程执行完毕"</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">运行结果：</span><br><span class="line">Thread-<span class="number">0</span>准备执行</span><br><span class="line">Thread-<span class="number">4</span>准备执行</span><br><span class="line">Thread-<span class="number">1</span>准备执行</span><br><span class="line">Thread-<span class="number">3</span>准备执行</span><br><span class="line">Thread-<span class="number">2</span>准备执行</span><br><span class="line">Thread-<span class="number">4</span> 开始执行，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">3</span> 开始执行，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">0</span> 开始执行，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">2</span> 开始执行，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">1</span> 开始执行，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">3</span>所有线程执行完毕，结束</span><br><span class="line">Thread-<span class="number">3</span> 执行完毕，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">0</span> 执行完毕，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">4</span> 执行完毕，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">1</span> 执行完毕，等待别的线程执行完毕</span><br><span class="line">Thread-<span class="number">2</span> 执行完毕，等待别的线程执行完毕</span><br></pre></td></tr></table></figure></p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2018/12/07/CountDownLatch/">java同步工具之CountDownLatch</a>
         
       </h1>

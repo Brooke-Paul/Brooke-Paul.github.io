@@ -10,5 +10,7 @@
 [Volatile](https://www.uuuup.vip/2018/11/29/Volatile/)  
 
 
-## java 同步工具
+## Java同步工具
 [CountDownLatch](https://www.uuuup.vip/2018/12/07/CountDownLatch/)  
+[Semaphore](https://www.uuuup.vip/2018/12/07/Semaphore/)  
+[CyclicBarrier](https://www.uuuup.vip/2018/12/10/CyclicBarrier/)  

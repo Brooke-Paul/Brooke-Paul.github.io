@@ -12,6 +12,6 @@
 
 
 ## Java同步工具
-[CountDownLatch](https://www.uuuup.vip/2018/12/07/CountDownLatch/)  
-[Semaphore](https://www.uuuup.vip/2018/12/07/Semaphore/)  
-[CyclicBarrier](https://www.uuuup.vip/2018/12/10/CyclicBarrier/)  
+[Java同步工具CountDownLatch](https://www.uuuup.vip/2018/12/07/CountDownLatch/)  
+[Java同步工具Semaphore](https://www.uuuup.vip/2018/12/07/Semaphore/)  
+[Java同步工具CyclicBarrier](https://www.uuuup.vip/2018/12/10/CyclicBarrier/)  

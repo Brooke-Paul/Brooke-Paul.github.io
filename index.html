@@ -228,6 +228,62 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2018/12/20/更改github作者信息/">github更改作者的提交信息</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-20
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/git-filter-branch-env-filter/">git filter-branch --env-filter</a>
+            
+              <a href="/categories/git-filter-branch-env-filter/collection/">collection</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="问题发现"><a href="#问题发现" class="headerlink" title="问题发现"></a>问题发现</h2><p><code>github</code>拉取代码分支后提交后贡献值不增加</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>执行第一步：<br><code>git config --global user.email &quot;youremail@googl.com&quot;</code><br><code>git config --global user.name &quot;your name&quot;</code></p>
+<p>执行第二步：<br><code>git clone --bare https://github.com/user/repo.git</code><br><code>cd repo.git</code></p>
+<p>执行第三步：</p>
+<figure class="highlight plain"><figcaption><span>filter-branch --env-filter '</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">OLD_EMAIL=&quot;your-old-email@example.com&quot; // 你的旧的email账号</span><br><span class="line">CORRECT_NAME=&quot;Your Correct Name&quot;   // 你的新的用户名</span><br><span class="line">CORRECT_EMAIL=&quot;your-correct-email@example.com&quot; // 你的新的email账号</span><br><span class="line"></span><br><span class="line">if [ &quot;$GIT_COMMITTER_EMAIL&quot; = &quot;$OLD_EMAIL&quot; ]</span><br><span class="line">then</span><br><span class="line">    export GIT_COMMITTER_NAME=&quot;$CORRECT_NAME&quot;</span><br><span class="line">    export GIT_COMMITTER_EMAIL=&quot;$CORRECT_EMAIL&quot;</span><br><span class="line">fi</span><br><span class="line">if [ &quot;$GIT_AUTHOR_EMAIL&quot; = &quot;$OLD_EMAIL&quot; ]</span><br><span class="line">then</span><br><span class="line">    export GIT_AUTHOR_NAME=&quot;$CORRECT_NAME&quot;</span><br><span class="line">    export GIT_AUTHOR_EMAIL=&quot;$CORRECT_EMAIL&quot;</span><br><span class="line">fi</span><br><span class="line">&apos; --tag-name-filter cat -- --branches --tags</span><br></pre></td></tr></table></figure>
+<p>执行第四步：<br><code>git push --force --tags origin &#39;refs/heads/*&#39;</code></p>
+<p>ok，至此作者信息修改完毕</p>
+<p>此时本地仓库提交代码会失败，首先执行 更新：<code>git pull origin master --allow-unrelated-histories</code></p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2018/12/15/Java线程池的四种使用方式/">Java线程池的四种使用方式</a>
         
       </h1>
@@ -384,57 +440,6 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/07/CountDownLatch/">java同步工具之CountDownLatch</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-12-07
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/java-并发/">java 并发</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="java并发之同步工具-CountDownLatch"><a href="#java并发之同步工具-CountDownLatch" class="headerlink" title="java并发之同步工具 CountDownLatch"></a>java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
-<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
-<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
-<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
           <a class="post-link" href="/2018/12/07/Semaphore/">java同步工具之Semaphore</a>
         
       </h1>
@@ -470,6 +475,57 @@
 <p><code>public boolean tryAcquire(long timeout, TimeUnit unit)</code> 在指定的时间内尝试地获取1个许可。</p>
 <p><code>public void release()</code>  释放许可。该方法一般调用于finally块中。<br><code>int availablePermits()</code> 返回此信号量中当前可用的许可数。</p>
 <p>例如： 在多线程中展示信号量的可用许可，为了准确测试当前许可数量，需要同步锁住<code>semaphore</code> 对象进行测试。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> permits = <span class="number">4</span>;</span><br><span class="line">        Semaphore semaphore = <span class="keyword">new</span> Semaphore(permits);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; permits; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (semaphore) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            semaphore.acquire();</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 获取一个许可"</span>);</span><br><span class="line">                            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 释放一个许可"</span>);</span><br><span class="line">                            semaphore.release();</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出结果：</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">0</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">0</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">3</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">2</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">2</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">1</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">1</span> 释放一个许可</span><br></pre></td></tr></table></figure></p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2018/12/07/CountDownLatch/">java同步工具之CountDownLatch</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-07
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/java-并发/">java 并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="java并发之同步工具-CountDownLatch"><a href="#java并发之同步工具-CountDownLatch" class="headerlink" title="java并发之同步工具 CountDownLatch"></a>java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
+<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
+<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
+<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
 
         
       

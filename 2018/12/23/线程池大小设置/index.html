@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="No accumulation of thousands of miles"/>
+  <meta name="description" content="合理设置Java线程池大小"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/archives/2018/11/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2018/12/23/线程池大小设置/"/>
 
 
 
@@ -90,11 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title>
-  
-    归档 - Brooke-Paul
-  
-</title>
+    <title> 合理设置Java线程池大小 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -224,59 +220,102 @@
           <div id="content" class="content">
             
   
-  
-  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          合理设置Java线程池大小
+        
+      </h1>
 
-  <section id="archive" class="archive">
-    
-      
-        <div class="archive-title">
-          <span class="archive-post-counter">
-            目前共计 16 篇日志
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-23
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
           </span>
-        </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#设置Java线程池大小"><span class="toc-text">设置Java线程池大小</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU密集型"><span class="toc-text">CPU密集型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IO密集型"><span class="toc-text">IO密集型</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
+<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
+<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
+<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
+<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
       
     
 
     
-      
+      <footer class="post-footer">
         
-        
-
-        
-          
-          <div class="collection-title">
-            <h2 class="archive-year">2018</h2>
+          <div class="post-tags">
+            
+              <a href="/tags/线程池/">线程池</a>
+            
           </div>
         
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            11-29
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2018/11/29/Volatile/" class="archive-post-link">
-            Volatile关键字解析
-          </a>
-        </span>
-      </div>
+        
+        
+  <nav class="post-nav">
     
-  </section>
-
-  
-  <nav class="pagination">
+      <a class="prev" href="/2018/12/23/线程池的初始化/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Java线程池的初始化</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
     
+    
+      <a class="next" href="/2018/12/20/更改github作者信息/">
+        <span class="next-text nav-default">github更改作者的提交信息</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
     
   </nav>
 
 
+      </footer>
+    
+
+  </article>
 
 
           </div>
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
       </main>
@@ -358,6 +397,11 @@
     </div>
 
     
+  
+  
+
+  
+
 
 
     

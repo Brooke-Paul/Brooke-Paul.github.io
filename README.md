@@ -15,3 +15,9 @@
 [Java同步工具CountDownLatch](https://www.uuuup.vip/2018/12/07/CountDownLatch/)  
 [Java同步工具Semaphore](https://www.uuuup.vip/2018/12/07/Semaphore/)  
 [Java同步工具CyclicBarrier](https://www.uuuup.vip/2018/12/10/CyclicBarrier/)  
+
+## Java并发
+[FutureTask配合ConcurrentHashMap使用获取结果缓存](https://www.uuuup.vip/2018/12/11/FutureTask%E4%BD%BF%E7%94%A8/)  
+[Java线程池的四种使用方式](https://www.uuuup.vip/2018/12/15/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%9B%9B%E7%A7%8D%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/)  
+[Java线程池的初始化](https://www.uuuup.vip/2018/12/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96/)  
+[合理设置Java线程池大小](https://www.uuuup.vip/2018/12/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E8%AE%BE%E7%BD%AE/)  

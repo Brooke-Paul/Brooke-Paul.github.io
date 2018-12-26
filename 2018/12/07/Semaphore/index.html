@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="java同步工具之Semaphore"/>
+  <meta name="description" content="Java同步工具之Semaphore"/>
 
 
 
@@ -90,7 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title> java同步工具之Semaphore - Brooke-Paul </title>
+    <title> Java同步工具之Semaphore - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -224,7 +224,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          java同步工具之Semaphore
+          Java同步工具之Semaphore
         
       </h1>
 
@@ -235,7 +235,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java-并发/">java 并发</a>
+              <a href="/categories/Java并发/">Java并发</a>
             
           </span>
         
@@ -248,7 +248,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#java并发之同步工具-Semaphore"><span class="toc-text">java并发之同步工具 Semaphore</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Semaphore信号量"><span class="toc-text">Semaphore信号量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Semaphore类的用法"><span class="toc-text">Semaphore类的用法</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java并发之同步工具-Semaphore"><span class="toc-text">Java并发之同步工具 Semaphore</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Semaphore信号量"><span class="toc-text">Semaphore信号量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Semaphore类的用法"><span class="toc-text">Semaphore类的用法</span></a></li></ol></li></ol>
     </div>
   </div>
 
@@ -256,7 +256,7 @@
 
     <div class="post-content">
       
-        <h2 id="java并发之同步工具-Semaphore"><a href="#java并发之同步工具-Semaphore" class="headerlink" title="java并发之同步工具 Semaphore"></a>java并发之同步工具 Semaphore</h2><h3 id="Semaphore信号量"><a href="#Semaphore信号量" class="headerlink" title="Semaphore信号量"></a>Semaphore信号量</h3><p><code>Semaphore</code> 用于控制线程并发数，<code>Semaphore</code> 可以控制同时访问资源的线程个数，实现一个文件允许访问的并发数。<br><code>Semaphore</code>维护了一个许可集，当调用<code>acquire()</code> 方法获取到许可时即可进入，无法获取许可的线程阻塞到有许可（或者直到连接中断或者连接超时）。<br>而 <code>release()</code> 表示释放一个许可。可以把<code>Semaphore</code>看成是一种共享锁。<code>Semaphore</code>允许同一时间多个线程同时访问临界区。</p>
+        <h2 id="Java并发之同步工具-Semaphore"><a href="#Java并发之同步工具-Semaphore" class="headerlink" title="Java并发之同步工具 Semaphore"></a>Java并发之同步工具 Semaphore</h2><h3 id="Semaphore信号量"><a href="#Semaphore信号量" class="headerlink" title="Semaphore信号量"></a>Semaphore信号量</h3><p><code>Semaphore</code> 用于控制线程并发数，<code>Semaphore</code> 可以控制同时访问资源的线程个数，实现一个文件允许访问的并发数。<br><code>Semaphore</code>维护了一个许可集，当调用<code>acquire()</code> 方法获取到许可时即可进入，无法获取许可的线程阻塞到有许可（或者直到连接中断或者连接超时）。<br>而 <code>release()</code> 表示释放一个许可。可以把<code>Semaphore</code>看成是一种共享锁。<code>Semaphore</code>允许同一时间多个线程同时访问临界区。</p>
 <h3 id="Semaphore类的用法"><a href="#Semaphore类的用法" class="headerlink" title="Semaphore类的用法"></a>Semaphore类的用法</h3><p>常用方法：<br><code>public void acquire()</code>  获取许可。</p>
 <p><code>public boolean tryAcquire()</code>  尝试获取许可。</p>
 <p><code>public boolean tryAcquire(long timeout, TimeUnit unit)</code> 在指定的时间内尝试地获取1个许可。</p>
@@ -289,15 +289,15 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2018/12/07/CountDownLatch/">
+      <a class="prev" href="/2018/12/10/CyclicBarrier/">
         <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">java同步工具之CountDownLatch</span>
+        <span class="prev-text nav-default">Java同步工具之CyclicBarrier</span>
         <span class="prev-text nav-mobile">上一篇</span>
       </a>
     
     
-      <a class="next" href="/2018/11/29/Volatile/">
-        <span class="next-text nav-default">Volatile关键字解析</span>
+      <a class="next" href="/2018/12/07/CountDownLatch/">
+        <span class="next-text nav-default">Java同步工具之CountDownLatch</span>
         <span class="prev-text nav-mobile">下一篇</span>
         <i class="iconfont icon-right"></i>
       </a>

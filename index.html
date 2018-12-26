@@ -228,6 +228,57 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2018/12/23/线程池大小设置/">合理设置Java线程池大小</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-23
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
+<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
+<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
+<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
+<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2018/12/23/线程池的初始化/">Java线程池的初始化</a>
         
       </h1>
@@ -269,57 +320,6 @@
 <h2 id="线程方法关闭"><a href="#线程方法关闭" class="headerlink" title="线程方法关闭"></a>线程方法关闭</h2><p>shutdown() 与 shutdownNow()<br><code>shutdown</code> 不会立即终止线程池，在不接收新的任务同时等待缓存队列中的任务执行完成后终止。<br><code>shutdownNow</code> 立即终止线程池，并尝试打断正在执行的任务，并且清空任务缓存队列，返回尚未执行的任务。</p>
 <p>举个例子：新建一个线程池测试带返回值的任务执行<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPoolExecutorTask</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        ExecutorService executorService = <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads, <span class="number">60L</span>, TimeUnit.SECONDS, <span class="keyword">new</span> LinkedBlockingDeque&lt;&gt;());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Future&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line"></span><br><span class="line">                Future future = executorService.submit(<span class="keyword">new</span> TaskResult());</span><br><span class="line">                futures.add(future);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; futures.size(); j++) &#123;</span><br><span class="line">                System.out.println(futures.get(j).get());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            executorService.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskResult</span> <span class="keyword">implements</span> <span class="title">Callable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Thread.currentThread().getName() + <span class="string">": 执行完毕"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行结果：<br>pool-1-thread-1: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-4: 执行完毕<br>pool-1-thread-5: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕</p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/12/23/线程池大小设置/">合理设置Java线程池大小</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-12-23
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/Java并发/">Java并发</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
-<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
-<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
-<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
-<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
 
         
       
@@ -449,7 +449,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java-并发/">java 并发</a>
+              <a href="/categories/Java并发/">Java并发</a>
             
           </span>
         
@@ -488,7 +488,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/10/CyclicBarrier/">java同步工具之CyclicBarrier</a>
+          <a class="post-link" href="/2018/12/10/CyclicBarrier/">Java同步工具之CyclicBarrier</a>
         
       </h1>
 
@@ -499,7 +499,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java-并发/">java 并发</a>
+              <a href="/categories/Java并发/">Java并发</a>
             
           </span>
         
@@ -517,7 +517,7 @@
         
 
         
-          <h2 id="java并发之同步工具-CyclicBarrier"><a href="#java并发之同步工具-CyclicBarrier" class="headerlink" title="java并发之同步工具 CyclicBarrier"></a>java并发之同步工具 CyclicBarrier</h2><h3 id="CyclicBarrier循环屏障"><a href="#CyclicBarrier循环屏障" class="headerlink" title="CyclicBarrier循环屏障"></a>CyclicBarrier循环屏障</h3><p><code>CyclicBarrier</code>用于让一组线程运行并互相等待，直到共同到达一个公共屏障点 (<code>common barrier point</code>，又被称为同步点)，被屏障拦截的所有线程就会继续执行。</p>
+          <h2 id="Java并发之同步工具-CyclicBarrier"><a href="#Java并发之同步工具-CyclicBarrier" class="headerlink" title="Java并发之同步工具 CyclicBarrier"></a>Java并发之同步工具 CyclicBarrier</h2><h3 id="CyclicBarrier循环屏障"><a href="#CyclicBarrier循环屏障" class="headerlink" title="CyclicBarrier循环屏障"></a>CyclicBarrier循环屏障</h3><p><code>CyclicBarrier</code>用于让一组线程运行并互相等待，直到共同到达一个公共屏障点 (<code>common barrier point</code>，又被称为同步点)，被屏障拦截的所有线程就会继续执行。</p>
 <p><code>CyclicBarrier</code>与<code>CountDownLatch</code>的功能非常类似。但一个<code>CyclicBarrier</code>实例在释放等待线程后可以继续使用。让下一批线程在屏障点等待。但<code>CountDownLatch</code>实例只能被使用一次。所以<code>CyclicBarrier</code>被称为循环 的 <code>barrier</code>。</p>
 <h3 id="CyclicBarrier类的用法"><a href="#CyclicBarrier类的用法" class="headerlink" title="CyclicBarrier类的用法"></a>CyclicBarrier类的用法</h3><p>构造方法</p>
 <p><code>CyclicBarrier(int parties)</code> 创建<code>CyclicBarrier</code>对象，<code>parties</code> 表示屏障拦截的线程数量。</p>
@@ -547,7 +547,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/07/CountDownLatch/">java同步工具之CountDownLatch</a>
+          <a class="post-link" href="/2018/12/07/Semaphore/">Java同步工具之Semaphore</a>
         
       </h1>
 
@@ -558,7 +558,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java-并发/">java 并发</a>
+              <a href="/categories/Java并发/">Java并发</a>
             
           </span>
         
@@ -576,11 +576,12 @@
         
 
         
-          <h2 id="java并发之同步工具-CountDownLatch"><a href="#java并发之同步工具-CountDownLatch" class="headerlink" title="java并发之同步工具 CountDownLatch"></a>java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
-<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
-<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
-<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
+          <h2 id="Java并发之同步工具-Semaphore"><a href="#Java并发之同步工具-Semaphore" class="headerlink" title="Java并发之同步工具 Semaphore"></a>Java并发之同步工具 Semaphore</h2><h3 id="Semaphore信号量"><a href="#Semaphore信号量" class="headerlink" title="Semaphore信号量"></a>Semaphore信号量</h3><p><code>Semaphore</code> 用于控制线程并发数，<code>Semaphore</code> 可以控制同时访问资源的线程个数，实现一个文件允许访问的并发数。<br><code>Semaphore</code>维护了一个许可集，当调用<code>acquire()</code> 方法获取到许可时即可进入，无法获取许可的线程阻塞到有许可（或者直到连接中断或者连接超时）。<br>而 <code>release()</code> 表示释放一个许可。可以把<code>Semaphore</code>看成是一种共享锁。<code>Semaphore</code>允许同一时间多个线程同时访问临界区。</p>
+<h3 id="Semaphore类的用法"><a href="#Semaphore类的用法" class="headerlink" title="Semaphore类的用法"></a>Semaphore类的用法</h3><p>常用方法：<br><code>public void acquire()</code>  获取许可。</p>
+<p><code>public boolean tryAcquire()</code>  尝试获取许可。</p>
+<p><code>public boolean tryAcquire(long timeout, TimeUnit unit)</code> 在指定的时间内尝试地获取1个许可。</p>
+<p><code>public void release()</code>  释放许可。该方法一般调用于finally块中。<br><code>int availablePermits()</code> 返回此信号量中当前可用的许可数。</p>
+<p>例如： 在多线程中展示信号量的可用许可，为了准确测试当前许可数量，需要同步锁住<code>semaphore</code> 对象进行测试。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> permits = <span class="number">4</span>;</span><br><span class="line">        Semaphore semaphore = <span class="keyword">new</span> Semaphore(permits);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; permits; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (semaphore) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            semaphore.acquire();</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 获取一个许可"</span>);</span><br><span class="line">                            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 释放一个许可"</span>);</span><br><span class="line">                            semaphore.release();</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出结果：</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">0</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">0</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">3</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">2</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">2</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">1</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">1</span> 释放一个许可</span><br></pre></td></tr></table></figure></p>
 
         
       
@@ -598,7 +599,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/07/Semaphore/">java同步工具之Semaphore</a>
+          <a class="post-link" href="/2018/12/07/CountDownLatch/">Java同步工具之CountDownLatch</a>
         
       </h1>
 
@@ -609,7 +610,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java-并发/">java 并发</a>
+              <a href="/categories/Java并发/">Java并发</a>
             
           </span>
         
@@ -627,12 +628,11 @@
         
 
         
-          <h2 id="java并发之同步工具-Semaphore"><a href="#java并发之同步工具-Semaphore" class="headerlink" title="java并发之同步工具 Semaphore"></a>java并发之同步工具 Semaphore</h2><h3 id="Semaphore信号量"><a href="#Semaphore信号量" class="headerlink" title="Semaphore信号量"></a>Semaphore信号量</h3><p><code>Semaphore</code> 用于控制线程并发数，<code>Semaphore</code> 可以控制同时访问资源的线程个数，实现一个文件允许访问的并发数。<br><code>Semaphore</code>维护了一个许可集，当调用<code>acquire()</code> 方法获取到许可时即可进入，无法获取许可的线程阻塞到有许可（或者直到连接中断或者连接超时）。<br>而 <code>release()</code> 表示释放一个许可。可以把<code>Semaphore</code>看成是一种共享锁。<code>Semaphore</code>允许同一时间多个线程同时访问临界区。</p>
-<h3 id="Semaphore类的用法"><a href="#Semaphore类的用法" class="headerlink" title="Semaphore类的用法"></a>Semaphore类的用法</h3><p>常用方法：<br><code>public void acquire()</code>  获取许可。</p>
-<p><code>public boolean tryAcquire()</code>  尝试获取许可。</p>
-<p><code>public boolean tryAcquire(long timeout, TimeUnit unit)</code> 在指定的时间内尝试地获取1个许可。</p>
-<p><code>public void release()</code>  释放许可。该方法一般调用于finally块中。<br><code>int availablePermits()</code> 返回此信号量中当前可用的许可数。</p>
-<p>例如： 在多线程中展示信号量的可用许可，为了准确测试当前许可数量，需要同步锁住<code>semaphore</code> 对象进行测试。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> permits = <span class="number">4</span>;</span><br><span class="line">        Semaphore semaphore = <span class="keyword">new</span> Semaphore(permits);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; permits; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (semaphore) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            semaphore.acquire();</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 获取一个许可"</span>);</span><br><span class="line">                            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 释放一个许可"</span>);</span><br><span class="line">                            semaphore.release();</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出结果：</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">0</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">0</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">3</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">2</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">2</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">1</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">1</span> 释放一个许可</span><br></pre></td></tr></table></figure></p>
+          <h2 id="Java并发之同步工具-CountDownLatch"><a href="#Java并发之同步工具-CountDownLatch" class="headerlink" title="Java并发之同步工具 CountDownLatch"></a>Java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
+<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
+<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
+<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
 
         
       
@@ -661,7 +661,7 @@
         
           <span class="post-category">
             
-              <a href="/categories/java/">java</a>
+              <a href="/categories/Java/">Java</a>
             
           </span>
         

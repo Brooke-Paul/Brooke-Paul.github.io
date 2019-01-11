@@ -20,4 +20,8 @@
 [FutureTask配合ConcurrentHashMap使用获取结果缓存](https://www.uuuup.vip/2018/12/11/FutureTask%E4%BD%BF%E7%94%A8/)  
 [Java线程池的四种使用方式](https://www.uuuup.vip/2018/12/15/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%9B%9B%E7%A7%8D%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F/)  
 [Java线程池的初始化](https://www.uuuup.vip/2018/12/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96/)  
-[合理设置Java线程池大小](https://www.uuuup.vip/2018/12/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E8%AE%BE%E7%BD%AE/)  
+[合理设置Java线程池大小](https://www.uuuup.vip/2018/12/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E8%AE%BE%E7%BD%AE/) 
+[Java线程的优化](https://www.uuuup.vip/2019/01/02/%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E5%8C%96/) 
+
+## Git操作
+[github更改作者的提交信息](https://www.uuuup.vip/2018/12/20/%E6%9B%B4%E6%94%B9github%E4%BD%9C%E8%80%85%E4%BF%A1%E6%81%AF/)

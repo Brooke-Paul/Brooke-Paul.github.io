@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="Java线程的优化"/>
+
+
+
+
+  <meta name="keywords" content="后台,java,mongo,mysql,vue,js,css,html" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Brooke-Paul">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.10.1" />
+
+
+
+<link rel="canonical" href="http://www.uuuup.vip/2019/01/02/线程的优化/"/>
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/nprogress/nprogress.min.css" />
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.10.1" />
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
+</script>
+
+    <title> Java线程的优化 - Brooke-Paul </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Brooke-Paul</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
+          
+        </li>
+      </a>
+    
+      <a href="/tags">
+        <li class="mobile-menu-item">
+          
+          
+            标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Brooke-Paul</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            
+            
+              分类
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            
+            
+              标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java线程的优化
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-02
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么使用线程"><span class="toc-text">为什么使用线程?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#线程引入的开销有哪些"><span class="toc-text">线程引入的开销有哪些?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#怎样降低锁的竞争"><span class="toc-text">怎样降低锁的竞争</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="为什么使用线程"><a href="#为什么使用线程" class="headerlink" title="为什么使用线程?"></a>为什么使用线程?</h2><p>因为串行执行任务时，所有的任务节点必须按照顺序执行，如果处理任务时执行时间过长，可能会导致程序无响应。在这种情况下，线程就派上用处了。线程的主要目的是提高程序的运行性能。尽管使用多个线程可以提升整体性能，但与单个线程相比，多个线程使用总会引入额外的开销。如果多线程设计有误，实现某个功能时性能甚至比单线程的性能还差。所以在使用线程时评估好任务执行耗时，充分利用资源进行优化。</p>
+<h2 id="线程引入的开销有哪些"><a href="#线程引入的开销有哪些" class="headerlink" title="线程引入的开销有哪些?"></a>线程引入的开销有哪些?</h2><p>在考虑使用多线程时，并行带来的性能提升必须要大于并发导致的性能开销，否则不要使用多线程。<br>具体的线程开销有三种<br>1.上下文切换， 是指<code>CPU</code>从一个线程或进程切换到另一个线程或进程。 当线程执行时发生的阻塞越多，与<code>CPU</code>密集型的程序就会发生越多的上下文切换，从而增加线程的开销。<br>2.内存同步，在使用<code>volatile</code>提供内存可见性时会使用一些特殊指令，即内存栅栏。内存栅栏可以刷新缓存，但是同样间接性的带来了性能上的影响，因为抑制了编译器的优化操作。在内存栅栏中，大多数操作是不能被重排序的。<br>3.线程阻塞，线程的竞争会增加开销。在锁上发生竞争时，竞争失败的线程会阻塞。当线程无法获取某个锁或者线程等待或者产生<code>I/O</code>阻塞时，线程被挂起，这个过程包含两次额外的上下文切换。</p>
+<h2 id="怎样降低锁的竞争"><a href="#怎样降低锁的竞争" class="headerlink" title="怎样降低锁的竞争"></a>怎样降低锁的竞争</h2><p>串行操作会降低可伸缩性，并且上下文切换时也会降低性能。在锁上发生竞争会导致这些问题，因此减小锁的竞争能够提高性能和可伸缩性。<br>有三种方式可以降低锁的竞争程度：<br>1.减小锁的持有时间，尽可能的缩短锁的持有时间，例如将与锁无关的代码移出代码块，尤其是开销较大的，以及可能被阻塞的操作。<br>2.减小锁的粒度，降低单位时间内请求锁的次数，从而降低竞争的可能性。<br>3.锁分段，将锁分解技术进一步扩展对一组独立对象上的锁进行分解。<br>4.避免热点区。<br>5.放弃使用独占锁。例如使用并发容器，读写锁，不可变对象以及原子变量。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>程序的可伸缩性取决于所有代码中必须被串行执行的代码比例，我们可以通过以下方式来提高可伸缩性：<br>减少锁的持有时间，降低锁的粒度，采用非独占式的锁或非阻塞锁来代替独占锁。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/线程优化/">线程优化</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2019/01/06/显示锁的使用/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">锁的使用</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2018/12/23/线程池的初始化/">
+        <span class="next-text nav-default">Java线程池的初始化</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:gentle.taoxue@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://github.com/Brooke-Paul" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+
+    
+  </div>
+
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2019
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Brooke-Paul</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+  
+
+
+
+  
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/pjax/jquery.pjax.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/nprogress/nprogress.min.js"></script>
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.10.1"></script>
+
+  </body>
+</html>

@@ -228,13 +228,13 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/23/线程池大小设置/">合理设置Java线程池大小</a>
+          <a class="post-link" href="/2019/01/10/ThreadLocal的源码分析/">ThreadLocal的源码分析</a>
         
       </h1>
 
       <div class="post-meta">
         <span class="post-time">
-          2018-12-23
+          2019-01-10
         </span>
         
           <span class="post-category">
@@ -257,11 +257,172 @@
         
 
         
-          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
-<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
-<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
-<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
-<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
+          <h2 id="ThreadLocal的介绍"><a href="#ThreadLocal的介绍" class="headerlink" title="ThreadLocal的介绍"></a>ThreadLocal的介绍</h2><p><code>ThreadLocal</code>用于保存某个线程中共享变量。在同一个线程中，共享变量之间的访问时隔离的，无法跨线程访问。因此<code>ThreadLocal</code>可以用作人员信息的保存，以及展示。</p>
+<h2 id="ThreadLocal提供的主要方法"><a href="#ThreadLocal提供的主要方法" class="headerlink" title="ThreadLocal提供的主要方法"></a>ThreadLocal提供的主要方法</h2><h3 id="ThreadLocal-set-用于当前线程信息保存"><a href="#ThreadLocal-set-用于当前线程信息保存" class="headerlink" title="ThreadLocal.set() 用于当前线程信息保存"></a><code>ThreadLocal.set()</code> 用于当前线程信息保存</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">        map.set(<span class="keyword">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>Thread</code> 中 <code>threadLocals</code> 作为变量，用于存储 <code>ThreadLocalMap</code>。 <code>set</code> 方法获取当前线程后首先调用 <code>getMap</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ThreadLocal values pertaining to this thread. This map is maintained</span></span><br><span class="line"><span class="comment"> * by the ThreadLocal class. */</span></span><br><span class="line">ThreadLocal.ThreadLocalMap threadLocals = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> t.threadLocals;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果当前线程的 <code>getMap</code> 获取的 <code>t.threadLocals</code> 为空，则调用 <code>createMap</code> 方法，<code>createMap</code> 的实现方式如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">createMap</span><span class="params">(Thread t, T firstValue)</span> </span>&#123;</span><br><span class="line">    t.threadLocals = <span class="keyword">new</span> ThreadLocalMap(<span class="keyword">this</span>, firstValue);</span><br><span class="line">&#125;</span><br><span class="line">构造 一个 ThreadLocalMap 对象 并将 key， value 保存到Entry数组中。</span><br><span class="line">ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) &#123;</span><br><span class="line">    table = <span class="keyword">new</span> Entry[INITIAL_CAPACITY];</span><br><span class="line">    <span class="keyword">int</span> i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - <span class="number">1</span>);</span><br><span class="line">    table[i] = <span class="keyword">new</span> Entry(firstKey, firstValue);</span><br><span class="line">    size = <span class="number">1</span>;</span><br><span class="line">    setThreshold(INITIAL_CAPACITY);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果当前线程的 <code>getMap</code> 获取的 <code>t.threadLocals</code> 不为空，则将<code>value</code>保存到 <code>ThreadLocalMap</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadLocalMap</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    Entry 继承自 WeakReference， 当对象不再使用时会被回收，避免内存泄漏。</span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">	    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">	    Object value;</span><br><span class="line">	</span><br><span class="line">	    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">	        <span class="keyword">super</span>(k);</span><br><span class="line">	        value = v;</span><br><span class="line">	    &#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ThreadLocal-get-用于当前线程信息获取"><a href="#ThreadLocal-get-用于当前线程信息获取" class="headerlink" title="ThreadLocal.get() 用于当前线程信息获取"></a><code>ThreadLocal.get()</code> 用于当前线程信息获取</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Thread t = Thread.currentThread(); 获取当前线程，</span><br><span class="line">    ThreadLocalMap map = getMap(t); 获取当前线程本地变量</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</span><br><span class="line">        ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">            T result = (T)e.value;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> setInitialValue();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果 本地线程变量不为空，从<code>getEntry</code> 中获取 <code>Entry</code> 对象   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">private</span> Entry <span class="title">getEntry</span><span class="params">(ThreadLocal&lt;?&gt; key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = key.threadLocalHashCode &amp; (table.length - <span class="number">1</span>);</span><br><span class="line">    Entry e = table[i];</span><br><span class="line">    <span class="keyword">if</span> (e != <span class="keyword">null</span> &amp;&amp; e.get() == key)</span><br><span class="line">        <span class="keyword">return</span> e;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> getEntryAfterMiss(key, i, e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>否则调用 <code>setInitialValue</code> 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">给一个空的value值， 之后的逻辑与 `ThreadLocal` 的 `set` 方法一致，获取当前线程本地变量，如果不为空重新设值，为空创建新的 `ThreadLocalMap`对象。      </span><br><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     T value = initialValue();</span><br><span class="line">     Thread t = Thread.currentThread();</span><br><span class="line">     ThreadLocalMap map = getMap(t);</span><br><span class="line">     <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">         map.set(<span class="keyword">this</span>, value);</span><br><span class="line">     <span class="keyword">else</span></span><br><span class="line">         createMap(t, value);</span><br><span class="line">     <span class="keyword">return</span> value;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ThreadLocal-remove-用于当前线程移除本地变量"><a href="#ThreadLocal-remove-用于当前线程移除本地变量" class="headerlink" title="ThreadLocal.remove() 用于当前线程移除本地变量"></a><code>ThreadLocal.remove()</code> 用于当前线程移除本地变量</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      ThreadLocalMap m = getMap(Thread.currentThread());</span><br><span class="line">      <span class="keyword">if</span> (m != <span class="keyword">null</span>)</span><br><span class="line">          m.remove(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2019/01/07/Synchronized与ReadWriteLock的区别/">Synchronized与ReadWriteLock的区别</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-07
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="Synchronized与ReadWriteLock相同点"><a href="#Synchronized与ReadWriteLock相同点" class="headerlink" title="Synchronized与ReadWriteLock相同点"></a>Synchronized与ReadWriteLock相同点</h2><p>1.在多线程并发编程中都能实现同步，当某个方法被<code>Synchronized</code>修饰时，其它的线程无法访问当前方法，只有阻塞等待此方法同步完成后获取锁。<br>2.<code>ReadWriteLock</code>为读写锁，适用情况为读多写少的场景，和<code>Synchronized</code>一样可以锁住某个方法，但是得手动释放锁。<br>3.<code>Synchronized</code> 和 <code>ReadWriteLock</code> 都是可重入锁，即一个线程在获取某个锁后，还可以继续获取同一个锁。</p>
+<h2 id="Synchronized与ReadWriteLock区别"><a href="#Synchronized与ReadWriteLock区别" class="headerlink" title="Synchronized与ReadWriteLock区别"></a>Synchronized与ReadWriteLock区别</h2><p>在内置锁<code>Synchronized</code>中使用简洁，不需要每次使用后手动释放锁，而<code>ReadWriteLock</code>必须每次使用后手动释放锁。<br>在内置锁<code>Synchronized</code>中不能手动中断锁操作，而<code>ReadWriteLock</code>可以手动取消锁。<br><code>ReadWriteLock</code>是一种性能优化措施，执行读锁时效率比<code>Synchronized</code> 更高。</p>
+<p>总结：<br>显示锁的设置上要灵活些，比如定时，轮询，以及中断操作等，但是使用难度要大些，并且容易忽略锁的释放。<br>当<code>Synchronized</code>无法满足多线程同步时才使用<code>ReadWriteLock</code>，否则尽量使用<code>Synchronized</code>。<br><code>ReadWriteLock</code>使用场景，当允许多个读线程并发的访问被保护的对象时可以使用读写锁，提高程序可伸缩性。</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2019/01/06/显示锁的使用/">锁的使用</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-06
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="显示锁介绍"><a href="#显示锁介绍" class="headerlink" title="显示锁介绍"></a>显示锁介绍</h2><p>java5.0之前，线程对共享对象的访问可以使用<code>synchronized</code> 和 <code>volatile</code>。java5.0之后新增了一种新机制， <code>ReentrantLock</code>。它并不是一种替代内置锁的方法，而是作为一种当内置锁机制不适用时的高级功能使用。<br><code>Lock</code> 定义了一种加锁操作， 与内置锁不同的是提供了一种可轮询的，可定时的，以及可中断的获取锁的操作。加锁和释放锁的操作都是显示执行的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span></span>; <span class="comment">//加锁操作</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>;  <span class="comment">//该锁与lock相似，但可以被中断</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">()</span></span>;  <span class="comment">//尝试获取锁操作</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">(<span class="keyword">long</span> time, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException</span>; <span class="comment">//在指定的时间内尝试获取所操作</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span></span>;  <span class="comment">//释放锁操作</span></span><br><span class="line"></span><br><span class="line"><span class="function">Condition <span class="title">newCondition</span><span class="params">()</span></span>; <span class="comment">//创建Condition对象，精细的控制多线程的休眠与唤醒</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="显示锁的三种使用方式"><a href="#显示锁的三种使用方式" class="headerlink" title="显示锁的三种使用方式"></a>显示锁的三种使用方式</h2><h3 id="第一种-轮询锁"><a href="#第一种-轮询锁" class="headerlink" title="第一种 轮询锁"></a>第一种 轮询锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">轮询顺序尝试获取两个锁，如果顺利获取并且转账金额小于当前用户的实际金额，加锁转账，释放锁。</span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (fromAcct.lock.tryLock()) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (toAcct.lock.tryLock()) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            <span class="keyword">if</span> (fromAcct.getBalance().compareTo(amount) &lt; <span class="number">0</span>)</span><br><span class="line">                                <span class="keyword">throw</span> <span class="keyword">new</span> InsufficientFundsException();</span><br><span class="line">                            <span class="keyword">else</span> &#123;</span><br><span class="line">                                fromAcct.debit(amount);</span><br><span class="line">                                toAcct.credit(amount);</span><br><span class="line">                                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            toAcct.lock.unlock();</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    fromAcct.lock.unlock();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (System.nanoTime() &lt; stopTime)</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            NANOSECONDS.sleep(fixedDelay + rnd.nextLong() % randMod);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="第二种-定时锁"><a href="#第二种-定时锁" class="headerlink" title="第二种 定时锁"></a>第二种 定时锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">尝试获取锁，设置当前锁的失效时间，如果在指定时间内未获取到锁，返回失败信息，获取锁后更改信息，最后释放锁</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">timeLockTest</span><span class="params">(String message,</span></span></span><br><span class="line"><span class="function"><span class="params">                                       <span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> nanosToLock = unit.toNanos(timeout)</span><br><span class="line">                - estimatedNanosToSend(message);</span><br><span class="line">        <span class="keyword">if</span> (!lock.tryLock(nanosToLock, NANOSECONDS))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> doSomeThing(message);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="第三种-可中断锁"><a href="#第三种-可中断锁" class="headerlink" title="第三种 可中断锁"></a>第三种 可中断锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">设置获取锁的同时保持对中断的响应，然后取消获取锁操作</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">sendSharedLine</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    lock.lockInterruptibly();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">       <span class="keyword">return</span> cancelSendSharedLine(); </span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="锁的公平性"><a href="#锁的公平性" class="headerlink" title="锁的公平性"></a>锁的公平性</h2><p>创建锁对象时默认创建非公平锁，非公平锁允许插队，公平锁必须按照顺序来获取锁。在获取锁的激烈竞争下，非公平锁的性能高于公平锁。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在<code>Synchronized</code> 中和 <code>ReentrantLock</code>中做出选择</p>
+<p><code>ReentrantLock</code> 的性能优于内置锁， 可以作为一种高级工具使用，功能包括可定时的，可轮询的，可中断的所获取操作。但是对于内置锁来说，它任然具有很大的优势，不需要自己手动去释放锁，并且使用简介紧凑。</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2019/01/02/线程的优化/">Java线程的优化</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-02
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="为什么使用线程"><a href="#为什么使用线程" class="headerlink" title="为什么使用线程?"></a>为什么使用线程?</h2><p>因为串行执行任务时，所有的任务节点必须按照顺序执行，如果处理任务时执行时间过长，可能会导致程序无响应。在这种情况下，线程就派上用处了。线程的主要目的是提高程序的运行性能。尽管使用多个线程可以提升整体性能，但与单个线程相比，多个线程使用总会引入额外的开销。如果多线程设计有误，实现某个功能时性能甚至比单线程的性能还差。所以在使用线程时评估好任务执行耗时，充分利用资源进行优化。</p>
+<h2 id="线程引入的开销有哪些"><a href="#线程引入的开销有哪些" class="headerlink" title="线程引入的开销有哪些?"></a>线程引入的开销有哪些?</h2><p>在考虑使用多线程时，并行带来的性能提升必须要大于并发导致的性能开销，否则不要使用多线程。<br>具体的线程开销有三种<br>1.上下文切换， 是指<code>CPU</code>从一个线程或进程切换到另一个线程或进程。 当线程执行时发生的阻塞越多，与<code>CPU</code>密集型的程序就会发生越多的上下文切换，从而增加线程的开销。<br>2.内存同步，在使用<code>volatile</code>提供内存可见性时会使用一些特殊指令，即内存栅栏。内存栅栏可以刷新缓存，但是同样间接性的带来了性能上的影响，因为抑制了编译器的优化操作。在内存栅栏中，大多数操作是不能被重排序的。<br>3.线程阻塞，线程的竞争会增加开销。在锁上发生竞争时，竞争失败的线程会阻塞。当线程无法获取某个锁或者线程等待或者产生<code>I/O</code>阻塞时，线程被挂起，这个过程包含两次额外的上下文切换。</p>
+<h2 id="怎样降低锁的竞争"><a href="#怎样降低锁的竞争" class="headerlink" title="怎样降低锁的竞争"></a>怎样降低锁的竞争</h2><p>串行操作会降低可伸缩性，并且上下文切换时也会降低性能。在锁上发生竞争会导致这些问题，因此减小锁的竞争能够提高性能和可伸缩性。<br>有三种方式可以降低锁的竞争程度：<br>1.减小锁的持有时间，尽可能的缩短锁的持有时间，例如将与锁无关的代码移出代码块，尤其是开销较大的，以及可能被阻塞的操作。<br>2.减小锁的粒度，降低单位时间内请求锁的次数，从而降低竞争的可能性。<br>3.锁分段，将锁分解技术进一步扩展对一组独立对象上的锁进行分解。<br>4.避免热点区。<br>5.放弃使用独占锁。例如使用并发容器，读写锁，不可变对象以及原子变量。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>程序的可伸缩性取决于所有代码中必须被串行执行的代码比例，我们可以通过以下方式来提高可伸缩性：<br>减少锁的持有时间，降低锁的粒度，采用非独占式的锁或非阻塞锁来代替独占锁。</p>
 
         
       
@@ -320,6 +481,57 @@
 <h2 id="线程方法关闭"><a href="#线程方法关闭" class="headerlink" title="线程方法关闭"></a>线程方法关闭</h2><p>shutdown() 与 shutdownNow()<br><code>shutdown</code> 不会立即终止线程池，在不接收新的任务同时等待缓存队列中的任务执行完成后终止。<br><code>shutdownNow</code> 立即终止线程池，并尝试打断正在执行的任务，并且清空任务缓存队列，返回尚未执行的任务。</p>
 <p>举个例子：新建一个线程池测试带返回值的任务执行<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPoolExecutorTask</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        ExecutorService executorService = <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads, <span class="number">60L</span>, TimeUnit.SECONDS, <span class="keyword">new</span> LinkedBlockingDeque&lt;&gt;());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Future&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line"></span><br><span class="line">                Future future = executorService.submit(<span class="keyword">new</span> TaskResult());</span><br><span class="line">                futures.add(future);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; futures.size(); j++) &#123;</span><br><span class="line">                System.out.println(futures.get(j).get());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            executorService.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskResult</span> <span class="keyword">implements</span> <span class="title">Callable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Thread.currentThread().getName() + <span class="string">": 执行完毕"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行结果：<br>pool-1-thread-1: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-4: 执行完毕<br>pool-1-thread-5: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2018/12/23/线程池大小设置/">合理设置Java线程池大小</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-23
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
+<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
+<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
+<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
+<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
 
         
       
@@ -547,6 +759,57 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2018/12/07/CountDownLatch/">Java同步工具之CountDownLatch</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-07
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="Java并发之同步工具-CountDownLatch"><a href="#Java并发之同步工具-CountDownLatch" class="headerlink" title="Java并发之同步工具 CountDownLatch"></a>Java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
+<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
+<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
+<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2018/12/07/Semaphore/">Java同步工具之Semaphore</a>
         
       </h1>
@@ -582,57 +845,6 @@
 <p><code>public boolean tryAcquire(long timeout, TimeUnit unit)</code> 在指定的时间内尝试地获取1个许可。</p>
 <p><code>public void release()</code>  释放许可。该方法一般调用于finally块中。<br><code>int availablePermits()</code> 返回此信号量中当前可用的许可数。</p>
 <p>例如： 在多线程中展示信号量的可用许可，为了准确测试当前许可数量，需要同步锁住<code>semaphore</code> 对象进行测试。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> permits = <span class="number">4</span>;</span><br><span class="line">        Semaphore semaphore = <span class="keyword">new</span> Semaphore(permits);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; permits; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (semaphore) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            semaphore.acquire();</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 获取一个许可"</span>);</span><br><span class="line">                            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" 释放一个许可"</span>);</span><br><span class="line">                            semaphore.release();</span><br><span class="line">                            System.out.println(<span class="string">"当前可用许可 "</span> + (semaphore.availablePermits()));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出结果：</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">0</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">0</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">3</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">2</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">2</span> 释放一个许可</span><br><span class="line">当前可用许可 <span class="number">4</span></span><br><span class="line">Thread-<span class="number">1</span> 获取一个许可</span><br><span class="line">当前可用许可 <span class="number">3</span></span><br><span class="line">Thread-<span class="number">1</span> 释放一个许可</span><br></pre></td></tr></table></figure></p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/12/07/CountDownLatch/">Java同步工具之CountDownLatch</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-12-07
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/Java并发/">Java并发</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="Java并发之同步工具-CountDownLatch"><a href="#Java并发之同步工具-CountDownLatch" class="headerlink" title="Java并发之同步工具 CountDownLatch"></a>Java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
-<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
-<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
-<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
 
         
       
@@ -1165,7 +1377,7 @@
      
       2015 - 
     
-    2018
+    2019
 
     <span class="heart">
       <i class="iconfont icon-heart"></i>

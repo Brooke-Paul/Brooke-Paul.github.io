@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="No accumulation of thousands of miles"/>
+  <meta name="description" content="Java内存区域"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/archives/2019/01/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2019/01/15/jvm/Java内存区域/"/>
 
 
 
@@ -90,11 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title>
-  
-    归档 - Brooke-Paul
-  
-</title>
+    <title> Java内存区域 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -224,219 +220,104 @@
           <div id="content" class="content">
             
   
-  
-  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java内存区域
+        
+      </h1>
 
-  <section id="archive" class="archive">
-    
-      
-        <div class="archive-title">
-          <span class="archive-post-counter">
-            目前共计 25 篇日志
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-15
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java虚拟机/">Java虚拟机</a>
+            
           </span>
-        </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-运行时数据区域"><span class="toc-text">Java 运行时数据区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java方法区"><span class="toc-text">Java方法区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java栈"><span class="toc-text">Java栈</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1）虚拟机栈"><span class="toc-text">1）虚拟机栈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2）本地方法栈"><span class="toc-text">2）本地方法栈</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java堆"><span class="toc-text">Java堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#程序计数器"><span class="toc-text">程序计数器</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="Java-运行时数据区域"><a href="#Java-运行时数据区域" class="headerlink" title="Java 运行时数据区域"></a>Java 运行时数据区域</h2><p><code>Java</code>虚拟机所管理的内存包括如下图所示的几个运行时数据区域<br><img src="../../img/2018120731.png" alt=""></p>
+<h3 id="Java方法区"><a href="#Java方法区" class="headerlink" title="Java方法区"></a>Java方法区</h3><p>方法区是线程共享区域，用于存储已被虚拟机加载的类信息，常量，静态变量，以及编译器编译后的代码等数据。 运行时常量池属于方法取得一部分。  </p>
+<h3 id="Java栈"><a href="#Java栈" class="headerlink" title="Java栈"></a>Java栈</h3><p><code>Java</code> 栈分为两块，包含虚拟机栈和本地方法栈。</p>
+<h4 id="1）虚拟机栈"><a href="#1）虚拟机栈" class="headerlink" title="1）虚拟机栈"></a>1）虚拟机栈</h4><p>虚拟机栈是线程私有的，它的生命周期与线程相同，每个方法运行时都会创建一个栈帧，用于存储局部变量表，操作数栈，动态链接，方法出入口信息等，每个方法从调用直至执行完成的过程，就对应着一个栈帧从虚拟机中入栈到出栈的过程。<br>其中局部变量表存放了8种基本类型数据，还有对象的引用。在<code>Java</code>虚拟机中对栈规定了两种异常情况，如果请求的栈的深度大于虚拟机所允许栈的深度，将抛出<code>StackOverflowError</code>异常，如果虚拟机可以动态扩展并且在扩展时无法申请足够的内存，那么将会抛出<code>OutOfMemoryError</code>异常。   </p>
+<h4 id="2）本地方法栈"><a href="#2）本地方法栈" class="headerlink" title="2）本地方法栈"></a>2）本地方法栈</h4><p>本地方法栈与虚拟机栈所发挥的作用类似，区别在于虚拟机栈为虚拟机执行<code>Java</code>方法服务， 本地方法栈为虚拟机执行<code>Native</code>方法服务。与虚拟机栈一样，本地方法栈也会抛出上面两种异常。</p>
+<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p><code>Java</code>堆是线程共享的。对大多数应用来说， <code>Java</code>堆是 虚拟机中被管理的最大的一块线程共享区域，在该区域存放的是对象的实例，几乎所有的对象实例都在堆中分配。<br><code>Java</code>堆是垃圾收集器管理的主要区域。现在的收集器基本都采用分代收集法，堆中可以细分为新生代和老年代，再细致一点可以分为 <code>Eden</code>区，<code>From Survivor</code>区域，<code>To Survivor</code>区域。</p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>程序计数器是一块较小的内存空间，可以作为线程的指示器。字节码解释器工作是通过改变记数器的值来选取下一条需要执行的字节码指令，分支，循环，跳转，异常处理，线程恢复等基础功能都依赖计数器来完成。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
       
     
 
     
-      
+      <footer class="post-footer">
         
-        
-
-        
-          
-          <div class="collection-title">
-            <h2 class="archive-year">2019</h2>
+          <div class="post-tags">
+            
+              <a href="/tags/JVM/">JVM</a>
+            
           </div>
         
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-20
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/20/jvm/虚拟机新能监控工具/" class="archive-post-link">
-            虚拟机新能监控工具
-          </a>
-        </span>
-      </div>
+        
+        
+  <nav class="post-nav">
     
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-19
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/19/jvm/JVM类加载机制/" class="archive-post-link">
-            JVM类加载机制
-          </a>
-        </span>
-      </div>
+      <a class="prev" href="/2019/01/16/jvm/垃圾收集与内存分配/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">垃圾收集与内存分配</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
     
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-16
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/16/jvm/垃圾收集与内存分配/" class="archive-post-link">
-            垃圾收集与内存分配
-          </a>
-        </span>
-      </div>
     
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-15
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/15/jvm/Java内存区域/" class="archive-post-link">
-            Java内存区域
-          </a>
-        </span>
-      </div>
-    
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-13
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/13/CAS深入解析/" class="archive-post-link">
-            CAS深入解析
-          </a>
-        </span>
-      </div>
-    
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-10
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/10/ThreadLocal的源码分析/" class="archive-post-link">
-            ThreadLocal的源码分析
-          </a>
-        </span>
-      </div>
-    
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-07
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/07/Synchronized与ReadWriteLock的区别/" class="archive-post-link">
-            Synchronized与ReadWriteLock的区别
-          </a>
-        </span>
-      </div>
-    
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-06
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/06/显示锁的使用/" class="archive-post-link">
-            锁的使用
-          </a>
-        </span>
-      </div>
-    
-      
-        
-        
-
-        
-      
-
-      <div class="archive-post">
-        <span class="archive-post-time">
-          
-            01-02
-          
-        </span>
-        <span class="archive-post-title">
-          <a href="/2019/01/02/线程的优化/" class="archive-post-link">
-            Java线程的优化
-          </a>
-        </span>
-      </div>
-    
-  </section>
-
-  
-  <nav class="pagination">
-    
+      <a class="next" href="/2019/01/13/CAS深入解析/">
+        <span class="next-text nav-default">CAS深入解析</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
     
   </nav>
 
 
+      </footer>
+    
+
+  </article>
 
 
           </div>
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
       </main>
@@ -518,6 +399,11 @@
     </div>
 
     
+  
+  
+
+  
+
 
 
     

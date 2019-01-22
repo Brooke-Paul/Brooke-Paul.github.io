@@ -17,7 +17,7 @@
 
 
 
-  <meta name="description" content="合理设置Java线程池大小"/>
+  <meta name="description" content="垃圾收集与内存分配"/>
 
 
 
@@ -42,7 +42,7 @@
 
 
 
-<link rel="canonical" href="http://www.uuuup.vip/2018/12/23/线程池大小设置/"/>
+<link rel="canonical" href="http://www.uuuup.vip/2019/01/16/jvm/垃圾收集与内存分配/"/>
 
 
 
@@ -90,7 +90,7 @@
   window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
 </script>
 
-    <title> 合理设置Java线程池大小 - Brooke-Paul </title>
+    <title> 垃圾收集与内存分配 - Brooke-Paul </title>
   </head>
 
   <body><div id="mobile-navbar" class="mobile-navbar">
@@ -224,18 +224,18 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          合理设置Java线程池大小
+          垃圾收集与内存分配
         
       </h1>
 
       <div class="post-meta">
         <span class="post-time">
-          2018-12-23
+          2019-01-16
         </span>
         
           <span class="post-category">
             
-              <a href="/categories/Java并发/">Java并发</a>
+              <a href="/categories/Java虚拟机/">Java虚拟机</a>
             
           </span>
         
@@ -248,7 +248,7 @@
   <div class="post-toc" id="post-toc">
     <h2 class="post-toc-title">文章目录</h2>
     <div class="post-toc-content">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#设置Java线程池大小"><span class="toc-text">设置Java线程池大小</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU密集型"><span class="toc-text">CPU密集型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IO密集型"><span class="toc-text">IO密集型</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#垃圾收集"><span class="toc-text">垃圾收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对象是否存活？"><span class="toc-text">对象是否存活？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对象引用"><span class="toc-text">对象引用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#垃圾收集算法"><span class="toc-text">垃圾收集算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#垃圾收集器"><span class="toc-text">垃圾收集器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GC"><span class="toc-text">GC</span></a></li></ol>
     </div>
   </div>
 
@@ -256,11 +256,12 @@
 
     <div class="post-content">
       
-        <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
-<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
-<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
-<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
-<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
+        <h2 id="垃圾收集"><a href="#垃圾收集" class="headerlink" title="垃圾收集"></a>垃圾收集</h2><p>垃圾收集（<code>Garbage Collection</code>), 俗称 <code>GC</code>。在系统中哪些内存需要回收？什么时候回收？怎样回收呢？当垃圾收集成为系统达到性能最优的阻碍时，我们就需要针对垃圾收集进行必要的监控与处理。</p>
+<h2 id="对象是否存活？"><a href="#对象是否存活？" class="headerlink" title="对象是否存活？"></a>对象是否存活？</h2><p><code>Java</code>堆中存放几乎所有对象实例，垃圾收集器在回收对象时需要判断对象是否存活。哪些方法能够判断对象可以被回收呢？<br>1). 引用计数算法<br>给对象添加一个引用计数器，每当引用一次计数器 + 1， 引用失效 - 1。<br>优点：实现简单，判定效率高。<br>缺点：无法判断对象之间相互引用的问题。<br>2). 可达性分析算法<br>基本思路是通过<code>GC Roots</code>的对象作为起始点，向下开始搜索，所走过的路径成为引用链（Reference Chain）,当一个对象到 <code>GC Roots</code> 没有任何引用链相连时，表示该对象不可用，即是可以被回收的对象。<br>在 <code>Java</code> 语言中，可作为<code>GC Roots</code>的对象包括下面几种：<br>(1).虚拟机栈（栈帧中的本地变量表)中引用的对象。<br>(2).方法区中类静态属性引用的对象。<br>(3).方法区中常量引用的对象。<br>(4).本地方法栈中JNI引用的对象。   </p>
+<h2 id="对象引用"><a href="#对象引用" class="headerlink" title="对象引用"></a>对象引用</h2><p><code>Java</code>中对对象的引用分为强引用，软引用，弱引用，虚引用四种，四种引用的强度依次递减。<br>1).强引用指的是类似<code>Object object = new Object()</code> 这类引用，只要强引用存在，引用的对象永远不会被垃圾收集器回收。<br>2).软引用描述的是有用但非必需的对象，对于软引用关联的对象，在系统将要发生内存溢出之前，系统将会把这些对象进行二次回收，如果这次回收还没有足够的内存，才会发生内存溢出异常。<br>3).弱引用也是描述非必需的对象，但是它的强度比软引用更弱一些， 被弱引用关联的对象只能生存到一下次垃圾收集之前。当垃圾回收的时候，无论内存足够，被弱引用关联的对象都会被回收。<br>4).虚引用是最弱的一种引用关系，若有若无。</p>
+<h2 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h2><p>1).标记-清除算法<br>先扫描并标记需要回收的对象，然后清除。标记和清除的效率都不是很高。<br>2).复制算法<br>把内存分为两块，当使用的一块内存不足时，将所有存活的对象复制到另一块，回收当前一整块<br>内存被分为eden区survivor 区，eden:survivor = 8:1<br>3).标记整理算法<br>标记出需要清理的对象，然后其余对象移动到另一端<br>4).分代收集算法  （最优法）<br>新生代使用复制算法  （新生代对象存活时间短，采用复制算法）<br>永久代使用其他两种算法 （永久代对象存活时间较长）   </p>
+<h2 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h2><p>Serial 是单线程收集器，并且工作时必须暂停其他线程工作。<br>ParNew 是 Serial 收集器的多线程版本，支持多条垃圾收集器并行工作。<br>Parallel Scavenge 是一个新生代收集器，使用复制算法的收集器，也是并行的多线程收集器。<br>Serial Old 是 Serial 收集器的老年代版本，也是一个单线程收集器，使用的是 标记-整理算法。<br>Parallel Old 是 Parallel Scavenge 的老年代版本，使用多线程 和 标记-整理算法。<br>CMS 是 以一种以获取最短回收停顿时间为目标的收集器，采用的是标记-清除算法。 停顿时间短，用户体验好，目前来看 CMS 收集器非常符合这类应用的需求。<br>G1收集器的优势：并行与并发， 分代收集， 空间整理 （标记整理算法，复制算法）。</p>
+<h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><p>对象在新生代Eden区中分配，当区域内存不足时，将会发生Minor GC（称为新生代GC)。<br>对发生在老年代的GC称为Major GC， Major GC会比Minor GC的速度慢10倍以上。<br>为了计算哪些对象在新生代，那些对象在老年代，虚拟机给每个对象定义了年龄计数器， 对象在Eden区发生了 Minor GC后任然存活并且能够被 Survivor容纳的话，将会移到Survivor区域，并且设置年龄为1，<br>对象每熬过一次Minor GC，年龄 +1。当对象年龄达到晋升老年代阈值时，晋升到老年代。（默认年龄为15岁， 可以通过参数 -XX： MaxTenuringThreshold)设置。  </p>
 
       
     </div>
@@ -280,7 +281,7 @@
         
           <div class="post-tags">
             
-              <a href="/tags/线程池/">线程池</a>
+              <a href="/tags/JVM/">JVM</a>
             
           </div>
         
@@ -288,15 +289,15 @@
         
   <nav class="post-nav">
     
-      <a class="prev" href="/2019/01/02/线程的优化/">
+      <a class="prev" href="/2019/01/19/jvm/JVM类加载机制/">
         <i class="iconfont icon-left"></i>
-        <span class="prev-text nav-default">Java线程的优化</span>
+        <span class="prev-text nav-default">JVM类加载机制</span>
         <span class="prev-text nav-mobile">上一篇</span>
       </a>
     
     
-      <a class="next" href="/2018/12/23/线程池的初始化/">
-        <span class="next-text nav-default">Java线程池的初始化</span>
+      <a class="next" href="/2019/01/15/jvm/Java内存区域/">
+        <span class="next-text nav-default">Java内存区域</span>
         <span class="prev-text nav-mobile">下一篇</span>
         <i class="iconfont icon-right"></i>
       </a>

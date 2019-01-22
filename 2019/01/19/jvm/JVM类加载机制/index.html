@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="JVM类加载机制"/>
+
+
+
+
+  <meta name="keywords" content="后台,java,mongo,mysql,vue,js,css,html" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Brooke-Paul">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.10.1" />
+
+
+
+<link rel="canonical" href="http://www.uuuup.vip/2019/01/19/jvm/JVM类加载机制/"/>
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/nprogress/nprogress.min.css" />
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.10.1" />
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
+</script>
+
+    <title> JVM类加载机制 - Brooke-Paul </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Brooke-Paul</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
+          
+        </li>
+      </a>
+    
+      <a href="/tags">
+        <li class="mobile-menu-item">
+          
+          
+            标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Brooke-Paul</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            
+            
+              分类
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            
+            
+              标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          JVM类加载机制
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-19
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java虚拟机/">Java虚拟机</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载机制"><span class="toc-text">类加载机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载的生命周期"><span class="toc-text">类加载的生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载的过程"><span class="toc-text">类加载的过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载器"><span class="toc-text">类加载器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#双亲委派模型"><span class="toc-text">双亲委派模型</span></a></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="类加载机制"><a href="#类加载机制" class="headerlink" title="类加载机制"></a>类加载机制</h2><p>虚拟机把描述的<code>.class</code>文件加载到内存，并对数据进行校验、准备、解析和初始化，最终能够被形成被<code>JVM</code>可以直接使用的<code>Java</code>类型的过程，这就是虚拟机的类加载机制。   </p>
+<h2 id="类加载的生命周期"><a href="#类加载的生命周期" class="headerlink" title="类加载的生命周期"></a>类加载的生命周期</h2><p>类从被加载到虚拟机内存开始，到卸载出内存结束包含七个阶段。包括加载，验证，准备，解析，初始化，使用，卸载。其中验证准备以及解析三个部分被称为连接。</p>
+<h2 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h2><p>1). 加载阶段<br>在加载阶段，虚拟机会通过类的全限定名来获取定义此类的二进制流。将字节流所代表的静态存储结构转换为方法区的运行时数据结构。在内存中生成一个代表这个类的<code>.class</code>对象，作为这个类的各种数据的访问人口。   </p>
+<p>2). 验证阶段<br>验证是连接阶段的第一步，目的是确保<code>.class</code>文件的字节流信息符合虚拟机的要求。<br>验证阶段主要检验四个点：<br>   文件格式校验(校验文件编码，校验文件常量引用等)<br>   元数据验证(对字节码描述信息进行语义分析，例如类是否有父类(<code>Object</code>)，类继承时是否包含<code>final</code>修饰，以及类是否实现了接口的所有方法等等)<br>   字节码验证(主要确定语义合法，变量类型转换有效等等)<br>   符号引用验证(例如类中方法以及字段的引用是否有效，以及是否能够被访问到等等)   </p>
+<p>3). 准备阶段<br>准备阶段正式为类变量分配内存并且设置类变量的初始值，这些变量使用方法区的内存进行分配。值的一提的是准备阶段内存分配的仅包括被<code>static</code>修饰的变量，而不包括实例变量。<br>默认情况下初始值为零值，但是如果被<code>final</code>修饰的变量在这个阶段会将其置为定义的值。   </p>
+<p>4). 解析阶段<br>虚拟机将常量池内的符号引用替换为直接引用的过程叫做解析。<br>   类或接口的解析<br>   字段的解析<br>   类方法解析<br>   接口方法解析   </p>
+<p>5). 初始化阶段<br>类加载过程的最后一步称为类初始化阶段。初始化阶段是执行类构造器<code>&lt;cinit&gt;()</code>方法的过程，并且静态语句块只能访问到定义到静态语句块之前的变量。   </p>
+<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a>类加载器</h2><p>类加载器用于加载类，并且对于任意一个类，被类加载器加载后都可以在虚拟机中确定唯一性。<br>即便是同样的字节代码，被不同的类加载器加载之后所得到的类，也是不同的。<br>通俗一点来讲，要判断两个类是否“相同”，前提是这两个类必须被同一个类加载器加载，否则这个两个类不“相同”。<br>这里指的“相同”，包括类的<code>.class</code>对象的<code>equals()</code>方法、<code>isAssignableFrom()</code>方法、<code>isInstance()</code>方法、<code>instanceof</code>关键字等判断出来的结果。      </p>
+<h2 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h2><p>对<code>Java</code> 虚拟机来说，只存在两种类加载器：<br>一种是启动类加载器<code>Bootstrap ClassLoader</code>，另一种是所有其他的类加载器。<br>其中启动类加载器<code>Bootstrap ClassLoader</code>加载<code>&lt;JAVA_HOME&gt;\lib</code>目录下核心库。<br>其他类加载器可以分为扩展类加载器<code>Extension ClassLoader</code>，和 应用程序类加载器<code>Application ClassLoader</code>。<br>扩展类加载器<code>Extension ClassLoader</code> 主要加载<code>&lt;JAVA_HOME&gt;\lib\ext</code>目录下扩展包。<br>应用程序类加载器<code>Application ClassLoader</code> 主要加载用户路径<code>classpath</code>下的指定类库。    </p>
+<p>如下图所示：  </p>
+<p><img src="../../img/timg.jpeg" alt=""></p>
+<p>该图即为类加载的双亲委派模型。除了顶层的类加载器之外，其余的所有类加载器必须有自己的父类加载器。<br>工作过程为：如果某个类需要被加载时默认不会自己尝试加载类，而是委托自己的父类加载器去完成。只有父类加载器无法完成该类的加载时抛出抛出异常，然后该类加载器才会尝试自己加载请求。<br>类加载器伪代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">判断该类是否被加载过</span><br><span class="line"><span class="keyword">if</span>（没有被加载)&#123;</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">      请求父级加载器类加载</span><br><span class="line">  &#125; <span class="keyword">catch</span>() &#123;</span><br><span class="line">      如果父级无法完成类加载，异常处理</span><br><span class="line">  &#125;</span><br><span class="line">  尝试自己去进行类加载</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/JVM/">JVM</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2019/01/20/jvm/虚拟机新能监控工具/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">虚拟机新能监控工具</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2019/01/16/jvm/垃圾收集与内存分配/">
+        <span class="next-text nav-default">垃圾收集与内存分配</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:gentle.taoxue@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://github.com/Brooke-Paul" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+
+    
+  </div>
+
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2019
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Brooke-Paul</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+  
+
+
+
+  
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/pjax/jquery.pjax.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/nprogress/nprogress.min.js"></script>
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.10.1"></script>
+
+  </body>
+</html>

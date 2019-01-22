@@ -31,7 +31,7 @@
 [github更改作者的提交信息](https://www.uuuup.vip/2018/12/20/%E6%9B%B4%E6%94%B9github%E4%BD%9C%E8%80%85%E4%BF%A1%E6%81%AF/)
 
 
-## Jvm
+## JVM
 [CAS深入解析](https://www.uuuup.vip/2019/01/13/CAS%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90/)
 [Java内存区域](https://www.uuuup.vip/2019/01/15/jvm/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F/)
 [垃圾收集与内存分配](https://www.uuuup.vip/2019/01/16/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/)

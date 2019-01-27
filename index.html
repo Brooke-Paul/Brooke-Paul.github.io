@@ -282,62 +282,6 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/20/jvm/虚拟机新能监控工具/">虚拟机新能监控工具</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2019-01-20
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/Java虚拟机/">Java虚拟机</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="JDK命令行工具"><a href="#JDK命令行工具" class="headerlink" title="JDK命令行工具"></a>JDK命令行工具</h2><h3 id="虚拟机进程状况工具jps"><a href="#虚拟机进程状况工具jps" class="headerlink" title="虚拟机进程状况工具jps"></a>虚拟机进程状况工具jps</h3><p>1). <code>jps -l</code> 输出主类的全名</p>
-<p><img src="../../img/FE08C341-3CC7-48EE-84A8-E4B4CC335013.png" alt=""></p>
-<p>2). <code>jps -v</code> 输出虚拟机进程启动时的JVM参数</p>
-<p><img src="../../img/02F11D52-CE9A-4BB2-99EC-B1C934DC243D.jpg" alt=""></p>
-<h3 id="虚拟机统计信息监控工具jstat"><a href="#虚拟机统计信息监控工具jstat" class="headerlink" title="虚拟机统计信息监控工具jstat"></a>虚拟机统计信息监控工具jstat</h3><p>1). <code>jstat -gc</code> 监视Java堆的状况，包括Eden区，survivor区，老年代，永久代的容量，已用空间以及GC时间合计的信息。</p>
-<p><img src="../../img/37A04B2B-82AA-4D89-90A9-000C0440C493.jpg" alt=""></p>
-<p>2). <code>jstat -gcutil</code> 监视内容基本与-gc相同，单输出内容主要是使用空间占比。</p>
-<p><img src="../../img/CB867D4A-4DE1-4016-A085-912FC219C64B.jpg" alt=""></p>
-<h3 id="java堆栈跟踪工具jstack"><a href="#java堆栈跟踪工具jstack" class="headerlink" title="java堆栈跟踪工具jstack"></a>java堆栈跟踪工具jstack</h3><p>1). <code>jstack -l</code> 除堆栈外，展示关于锁的附加信息。</p>
-<p><img src="../../img/死锁.png" alt=""></p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
           <a class="post-link" href="/2019/01/20/jvm/虚拟机性能监控工具/">虚拟机性能监控工具</a>
         
       </h1>
@@ -819,57 +763,6 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/23/concurrent/线程池大小设置/">合理设置Java线程池大小</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-12-23
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/Java并发/">Java并发</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
-<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
-<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
-<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
-<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
           <a class="post-link" href="/2018/12/23/concurrent/线程池的初始化/">Java线程池的初始化</a>
         
       </h1>
@@ -911,6 +804,57 @@
 <h2 id="线程方法关闭"><a href="#线程方法关闭" class="headerlink" title="线程方法关闭"></a>线程方法关闭</h2><p>shutdown() 与 shutdownNow()<br><code>shutdown</code> 不会立即终止线程池，在不接收新的任务同时等待缓存队列中的任务执行完成后终止。<br><code>shutdownNow</code> 立即终止线程池，并尝试打断正在执行的任务，并且清空任务缓存队列，返回尚未执行的任务。</p>
 <p>举个例子：新建一个线程池测试带返回值的任务执行<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPoolExecutorTask</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        ExecutorService executorService = <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads, <span class="number">60L</span>, TimeUnit.SECONDS, <span class="keyword">new</span> LinkedBlockingDeque&lt;&gt;());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Future&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line"></span><br><span class="line">                Future future = executorService.submit(<span class="keyword">new</span> TaskResult());</span><br><span class="line">                futures.add(future);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; futures.size(); j++) &#123;</span><br><span class="line">                System.out.println(futures.get(j).get());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            executorService.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskResult</span> <span class="keyword">implements</span> <span class="title">Callable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Thread.currentThread().getName() + <span class="string">": 执行完毕"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行结果：<br>pool-1-thread-1: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-4: 执行完毕<br>pool-1-thread-5: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2018/12/23/concurrent/线程池大小设置/">合理设置Java线程池大小</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-23
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
+<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
+<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
+<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
+<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
 
         
       

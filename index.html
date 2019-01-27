@@ -228,6 +228,116 @@
     <header class="post-header">
       <h1 class="post-title">
         
+          <a class="post-link" href="/2019/01/27/jvm/Java线程安全/">Java线程安全</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-27
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java虚拟机/">Java虚拟机</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="Java操作共享数据"><a href="#Java操作共享数据" class="headerlink" title="Java操作共享数据"></a>Java操作共享数据</h2><p><code>Java</code>操作共享数据分为五类。不可变，绝对线程安全，相对线程安全，线程兼容和线程对立。   </p>
+<h3 id="不可变"><a href="#不可变" class="headerlink" title="不可变"></a>不可变</h3><p>不可变的对象一定是线程安全的，只要一个不可变对象被正确的构造出来（没有发生this引用逃逸的情况)，那么外部访问的可见状态永远不会改变。   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 第一种：被final修饰的基本类型值不能改变</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> number = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String message = <span class="string">"hello"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 第二种：被final修饰的对象, 对象不能改变，但是对象中的变量值可以改变</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Person person = <span class="keyword">new</span> Person(<span class="string">"zhangshan"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        ThreadSafetyDemo threadSafetyDemo = <span class="keyword">new</span> ThreadSafetyDemo();</span><br><span class="line">        System.out.println(<span class="string">"不可变对象int："</span> + threadSafetyDemo.number);</span><br><span class="line">        System.out.println(<span class="string">"不可变对象string："</span> + threadSafetyDemo.message);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"不可变对象person："</span> + threadSafetyDemo.person);</span><br><span class="line">        threadSafetyDemo.person.setName(<span class="string">"lishi"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//Cannot assign a value to final variable 'person'</span></span><br><span class="line"><span class="comment">//        threadSafetyDemo.person = new Person();</span></span><br><span class="line">        System.out.println(<span class="string">"不可变对象person："</span> + threadSafetyDemo.person);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这里分析一下this引用逃逸，当线程RunablTest1还未初始化demo对象时，线程RunablTest2尝试获取未初始化demo对象的变量，代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">static</span> ThreadSafetyDemo demo;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ThreadSafetyDemo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    i = <span class="number">1</span>;</span><br><span class="line">    System.out.println(<span class="string">"hello"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RunablTest1</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        demo = <span class="keyword">new</span> ThreadSafetyDemo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RunablTest2</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(demo.i);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NullPointerException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"发生空指针错误：普通变量j未被初始化"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(demo.i);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NullPointerException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"发生空指针错误：final变量i未被初始化"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> RunablTest2()).start();</span><br><span class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> RunablTest1()).start();</span><br><span class="line">&#125;</span><br><span class="line">输出结果：</span><br><span class="line">发生空指针错误：普通变量j未被初始化</span><br><span class="line">发生空指针错误：<span class="keyword">final</span>变量i未被初始化</span><br><span class="line">hello</span><br></pre></td></tr></table></figure></p>
+<h3 id="绝对线程安全"><a href="#绝对线程安全" class="headerlink" title="绝对线程安全"></a>绝对线程安全</h3><p>绝对线程安全类定义是非常严格的，要实现一个绝对线程安全的类通常需要付出很大的、甚至有时候是不切实际的代价。   </p>
+<h3 id="相对线程安全"><a href="#相对线程安全" class="headerlink" title="相对线程安全"></a>相对线程安全</h3><p>相对的线程安全就是所讲的线程安全，在大部分线程安全类都属于这种类型，例如<code>Vector</code>，<code>HashTable</code>等。   </p>
+<h3 id="线程兼容"><a href="#线程兼容" class="headerlink" title="线程兼容"></a>线程兼容</h3><p>线程兼容是指对象本身不是线程安全的，但可以通过同步手段保证对象在并发的同时安全的使用。   </p>
+<h3 id="线程对立"><a href="#线程对立" class="headerlink" title="线程对立"></a>线程对立</h3><p>线程对立是指无论调用端是否采取了同步措施，都无法在多线程环境下同时持有一个线程对象。      </p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2019/01/20/jvm/虚拟机新能监控工具/">虚拟机新能监控工具</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-20
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java虚拟机/">Java虚拟机</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="JDK命令行工具"><a href="#JDK命令行工具" class="headerlink" title="JDK命令行工具"></a>JDK命令行工具</h2><h3 id="虚拟机进程状况工具jps"><a href="#虚拟机进程状况工具jps" class="headerlink" title="虚拟机进程状况工具jps"></a>虚拟机进程状况工具jps</h3><p>1). <code>jps -l</code> 输出主类的全名</p>
+<p><img src="../../img/FE08C341-3CC7-48EE-84A8-E4B4CC335013.png" alt=""></p>
+<p>2). <code>jps -v</code> 输出虚拟机进程启动时的JVM参数</p>
+<p><img src="../../img/02F11D52-CE9A-4BB2-99EC-B1C934DC243D.jpg" alt=""></p>
+<h3 id="虚拟机统计信息监控工具jstat"><a href="#虚拟机统计信息监控工具jstat" class="headerlink" title="虚拟机统计信息监控工具jstat"></a>虚拟机统计信息监控工具jstat</h3><p>1). <code>jstat -gc</code> 监视Java堆的状况，包括Eden区，survivor区，老年代，永久代的容量，已用空间以及GC时间合计的信息。</p>
+<p><img src="../../img/37A04B2B-82AA-4D89-90A9-000C0440C493.jpg" alt=""></p>
+<p>2). <code>jstat -gcutil</code> 监视内容基本与-gc相同，单输出内容主要是使用空间占比。</p>
+<p><img src="../../img/CB867D4A-4DE1-4016-A085-912FC219C64B.jpg" alt=""></p>
+<h3 id="java堆栈跟踪工具jstack"><a href="#java堆栈跟踪工具jstack" class="headerlink" title="java堆栈跟踪工具jstack"></a>java堆栈跟踪工具jstack</h3><p>1). <code>jstack -l</code> 除堆栈外，展示关于锁的附加信息。</p>
+<p><img src="../../img/死锁.png" alt=""></p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
           <a class="post-link" href="/2019/01/20/jvm/虚拟机性能监控工具/">虚拟机性能监控工具</a>
         
       </h1>
@@ -448,7 +558,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/13/CAS深入解析/">CAS深入解析</a>
+          <a class="post-link" href="/2019/01/13/concurrent/CAS深入解析/">CAS深入解析</a>
         
       </h1>
 
@@ -496,7 +606,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/10/ThreadLocal的源码分析/">ThreadLocal的源码分析</a>
+          <a class="post-link" href="/2019/01/10/concurrent/ThreadLocal的源码分析/">ThreadLocal的源码分析</a>
         
       </h1>
 
@@ -556,7 +666,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/07/Synchronized与ReadWriteLock的区别/">Synchronized与ReadWriteLock的区别</a>
+          <a class="post-link" href="/2019/01/07/concurrent/Synchronized与ReadWriteLock的区别/">Synchronized与ReadWriteLock的区别</a>
         
       </h1>
 
@@ -585,7 +695,8 @@
         
 
         
-          <h2 id="Synchronized与ReadWriteLock相同点"><a href="#Synchronized与ReadWriteLock相同点" class="headerlink" title="Synchronized与ReadWriteLock相同点"></a>Synchronized与ReadWriteLock相同点</h2><p>1.在多线程并发编程中都能实现同步，当某个方法被<code>Synchronized</code>修饰时，其它的线程无法访问当前方法，只有阻塞等待此方法同步完成后获取锁。<br>2.<code>ReadWriteLock</code>为读写锁，适用情况为读多写少的场景，和<code>Synchronized</code>一样可以锁住某个方法，但是得手动释放锁。<br>3.<code>Synchronized</code> 和 <code>ReadWriteLock</code> 都是可重入锁，即一个线程在获取某个锁后，还可以继续获取同一个锁。</p>
+          <h2 id="Synchronized"><a href="#Synchronized" class="headerlink" title="Synchronized"></a>Synchronized</h2><p><code>Synchronized</code>关键字是最基本的互斥同步，经过编译之后，会在同步块的前后形成<code>monitorenter</code>和<code>monitorexit</code>两个字节码指令，在和执行<code>monitorenter</code><br>指令时，首先会尝试获取对象的锁，把锁的计数器加一。相应的，在执行<code>monitorexit</code>指令时会将计数器的值减一，当计数器的值为零时锁会被释放。如果获取对象锁失败，那么当前线程就会阻塞等待，直到对象锁被另一个线程释放为止。</p>
+<h2 id="Synchronized与ReadWriteLock相同点"><a href="#Synchronized与ReadWriteLock相同点" class="headerlink" title="Synchronized与ReadWriteLock相同点"></a>Synchronized与ReadWriteLock相同点</h2><p>1.在多线程并发编程中都能实现同步，当某个方法被<code>Synchronized</code>修饰时，其它的线程无法访问当前方法，只有阻塞等待此方法同步完成后获取锁。<br>2.<code>ReadWriteLock</code>为读写锁，适用情况为读多写少的场景，和<code>Synchronized</code>一样可以锁住某个方法，但是得手动释放锁。<br>3.<code>Synchronized</code> 和 <code>ReadWriteLock</code> 都是可重入锁，即一个线程在获取某个锁后，还可以继续获取同一个锁。</p>
 <h2 id="Synchronized与ReadWriteLock区别"><a href="#Synchronized与ReadWriteLock区别" class="headerlink" title="Synchronized与ReadWriteLock区别"></a>Synchronized与ReadWriteLock区别</h2><p>在内置锁<code>Synchronized</code>中使用简洁，不需要每次使用后手动释放锁，而<code>ReadWriteLock</code>必须每次使用后手动释放锁。<br>在内置锁<code>Synchronized</code>中不能手动中断锁操作，而<code>ReadWriteLock</code>可以手动取消锁。<br><code>ReadWriteLock</code>是一种性能优化措施，执行读锁时效率比<code>Synchronized</code> 更高。</p>
 <p>总结：<br>显示锁的设置上要灵活些，比如定时，轮询，以及中断操作等，但是使用难度要大些，并且容易忽略锁的释放。<br>当<code>Synchronized</code>无法满足多线程同步时才使用<code>ReadWriteLock</code>，否则尽量使用<code>Synchronized</code>。<br><code>ReadWriteLock</code>使用场景，当允许多个读线程并发的访问被保护的对象时可以使用读写锁，提高程序可伸缩性。</p>
 
@@ -605,7 +716,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/06/显示锁的使用/">锁的使用</a>
+          <a class="post-link" href="/2019/01/06/concurrent/显示锁的使用/">锁的使用</a>
         
       </h1>
 
@@ -658,7 +769,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2019/01/02/线程的优化/">Java线程的优化</a>
+          <a class="post-link" href="/2019/01/02/concurrent/线程的优化/">Java线程的优化</a>
         
       </h1>
 
@@ -708,7 +819,58 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/23/线程池的初始化/">Java线程池的初始化</a>
+          <a class="post-link" href="/2018/12/23/concurrent/线程池大小设置/">合理设置Java线程池大小</a>
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-23
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+
+    <div class="post-content">
+      
+        
+        
+
+        
+          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
+<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
+<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
+<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
+<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
+
+        
+      
+    </div>
+
+    
+
+    
+
+  </article>
+
+      
+        
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          <a class="post-link" href="/2018/12/23/concurrent/线程池的初始化/">Java线程池的初始化</a>
         
       </h1>
 
@@ -749,57 +911,6 @@
 <h2 id="线程方法关闭"><a href="#线程方法关闭" class="headerlink" title="线程方法关闭"></a>线程方法关闭</h2><p>shutdown() 与 shutdownNow()<br><code>shutdown</code> 不会立即终止线程池，在不接收新的任务同时等待缓存队列中的任务执行完成后终止。<br><code>shutdownNow</code> 立即终止线程池，并尝试打断正在执行的任务，并且清空任务缓存队列，返回尚未执行的任务。</p>
 <p>举个例子：新建一个线程池测试带返回值的任务执行<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPoolExecutorTask</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        ExecutorService executorService = <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads, <span class="number">60L</span>, TimeUnit.SECONDS, <span class="keyword">new</span> LinkedBlockingDeque&lt;&gt;());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;Future&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line"></span><br><span class="line">                Future future = executorService.submit(<span class="keyword">new</span> TaskResult());</span><br><span class="line">                futures.add(future);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; futures.size(); j++) &#123;</span><br><span class="line">                System.out.println(futures.get(j).get());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            executorService.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaskResult</span> <span class="keyword">implements</span> <span class="title">Callable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Thread.currentThread().getName() + <span class="string">": 执行完毕"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行结果：<br>pool-1-thread-1: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-4: 执行完毕<br>pool-1-thread-5: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-2: 执行完毕<br>pool-1-thread-3: 执行完毕<br>pool-1-thread-3: 执行完毕</p>
-
-        
-      
-    </div>
-
-    
-
-    
-
-  </article>
-
-      
-        
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">
-        
-          <a class="post-link" href="/2018/12/23/线程池大小设置/">合理设置Java线程池大小</a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2018-12-23
-        </span>
-        
-          <span class="post-category">
-            
-              <a href="/categories/Java并发/">Java并发</a>
-            
-          </span>
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-
-    <div class="post-content">
-      
-        
-        
-
-        
-          <h2 id="设置Java线程池大小"><a href="#设置Java线程池大小" class="headerlink" title="设置Java线程池大小"></a>设置Java线程池大小</h2><p>线程池大小设置取决于所部署的系统中包含的<code>CPU</code>， 内存。 必须分析计算环境，资源预算和任务的特性。</p>
-<h3 id="CPU密集型"><a href="#CPU密集型" class="headerlink" title="CPU密集型"></a>CPU密集型</h3><p>尽量使用较小的线程池，一般<code>CPU</code>核心数+1。因为<code>CPU</code>密集型任务CPU的使用率很高，若开过多的线程，只能增加线程上下文的切换次数，带来额外的开销。<br>任务特性分为<code>CPU</code>密集型， <code>IO</code>密集型，混合密集型。对于<code>CPU</code>密集型， 在拥有<code>N</code>个<code>CPU</code>的处理器系统中，线程设置为 n + 1。   </p>
-<h3 id="IO密集型"><a href="#IO密集型" class="headerlink" title="IO密集型"></a>IO密集型</h3><p>可以使用较大的线程池，一般<code>CPU</code>核心数 <em> 2， <code>IO</code>密集型<code>CPU</code>使用率不高，可以让<code>CPU</code>等待<code>IO</code>的时候处理别的任务，充分利用<code>CPU</code>时间。<br>对于<code>IO</code>密集型，线程设置为 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）</em> CPU数目， 比如线程等待时间为 1s,<br>而线程<code>CPU</code>时间为0.5s，假设当前<code>CPU</code>核心数为4核，则当前线程池大小为12。</p>
-<p>在实际项目中可以通过<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> cpuNum = Runtime.getRuntime().availableProcessors();</span><br></pre></td></tr></table></figure></p>
-<p>获取<code>CPU</code> cpuNum数目。<br>结论：线程等待时间所占比例越高，需要越多线程。线程<code>CPU</code>时间所占比例越高，需要越少线程。</p>
 
         
       
@@ -871,7 +982,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/15/Java线程池的四种使用方式/">Java线程池的四种使用方式</a>
+          <a class="post-link" href="/2018/12/15/concurrent/Java线程池的四种使用方式/">Java线程池的四种使用方式</a>
         
       </h1>
 
@@ -918,7 +1029,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/11/FutureTask使用/">FutureTask 配合 ConcurrentHashMap 使用</a>
+          <a class="post-link" href="/2018/12/11/concurrent/FutureTask使用/">FutureTask 配合 ConcurrentHashMap 使用</a>
         
       </h1>
 
@@ -968,7 +1079,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/10/CyclicBarrier/">Java同步工具之CyclicBarrier</a>
+          <a class="post-link" href="/2018/12/10/concurrent/CyclicBarrier/">Java同步工具之CyclicBarrier</a>
         
       </h1>
 
@@ -1027,7 +1138,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/07/CountDownLatch/">Java同步工具之CountDownLatch</a>
+          <a class="post-link" href="/2018/12/07/concurrent/CountDownLatch/">Java同步工具之CountDownLatch</a>
         
       </h1>
 
@@ -1078,7 +1189,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/12/07/Semaphore/">Java同步工具之Semaphore</a>
+          <a class="post-link" href="/2018/12/07/concurrent/Semaphore/">Java同步工具之Semaphore</a>
         
       </h1>
 
@@ -1130,7 +1241,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/11/29/Volatile/">Volatile关键字解析</a>
+          <a class="post-link" href="/2018/11/29/concurrent/Volatile/">Volatile关键字解析</a>
         
       </h1>
 
@@ -1167,6 +1278,7 @@
 <h3 id="内存可见性"><a href="#内存可见性" class="headerlink" title="内存可见性"></a>内存可见性</h3><p>   变量在被<code>volatile</code>修饰后更改变量的值会立即被写回主存，同时会使其他线程工作内存的旧值失效，新值对于其他线程是可见的，因为<code>volatile</code>修饰的变量在每个线程中使用前都会去主内存中获取最新的值。<br>   虽然<code>volatile</code>修饰的值每次都会被线程获取到，但是并不能保证线程并发的安全性。因为忽略了原子性，<code>volatile</code>在执行时并不能保证原子性，对变量的操作可能就是很简单的 <code>i+=1</code>,但是底层需要多条字节码操作才能完成，在并发情况并不能保证原子性。</p>
 <h3 id="禁止指令重排序优化"><a href="#禁止指令重排序优化" class="headerlink" title="禁止指令重排序优化"></a>禁止指令重排序优化</h3><p>   指令重排序是指CPU在正确处理指令依赖(数据依赖)并且保障程序执行得到正确结果的情况下，调整代码的执行顺序，允许将多条指令不按照程序规定顺序分开发送给各相应电路单元处理。需要注意的是指令重排序不会影响到代码在单线程环境下的执行，会影响到多线程并发情况下执行的正确性。</p>
 <h3 id="使用条件"><a href="#使用条件" class="headerlink" title="使用条件"></a>使用条件</h3><p>如果让<code>volatile</code>保证原子性，必须符合以下两条规则：<br>1.运算结果并不依赖于变量的当前值，或者能够确保只有一个线程修改变量的值；<br>2.变量不需要与其他的状态变量共同参与不变约束；</p>
+<h3 id="先行发生原则"><a href="#先行发生原则" class="headerlink" title="先行发生原则"></a>先行发生原则</h3><p>先行发生（<code>happens-before</code>）是判断数据是否存在竞争、线程是否安全的主要依据。如果A操作在B操作之前完成，那么B将观察到A执行的结果。<br><code>Java</code> 内存模型中存在着一些天然的先行发生关系：<br>1). 程序次序规则：在一个线程内，操作分先后，控制流顺序。<br>2). 管程锁定规则：一个<code>unlock</code>释放锁的操作先行发生于后面对同一个锁的<code>lock</code>加锁操作。<br>2). <code>volatile</code>变量规则：对一个<code>volatile</code>变量的写操作先行发生于后面对这个变量的读操作。<br>2). 线程启动规则：<code>Thread</code>的<code>start()</code>方法先发生于对这个线程的所有操作。<br>5). 线程终止规则：现成的所有操作都先行发生于对此线程的终止操作。<br>6). 线程中断规则：对线程<code>interrupt()</code>方法的调用先行发生于被中断线程的代码检测到中断事件的发生。<br>7). 对象终结规则：一个对象的初始化完成先行发生于它的<code>finalize()</code> 方法。<br>8). 传递性：如果A操作先行发生于B操作，操作B先行发生于C操作，那么可以得出A操作先发生于C操作。</p>
 
         
       
@@ -1184,7 +1296,7 @@
     <header class="post-header">
       <h1 class="post-title">
         
-          <a class="post-link" href="/2018/10/23/线程与进程详解/">线程与进程详解</a>
+          <a class="post-link" href="/2018/10/23/concurrent/线程与进程详解/">线程与进程详解</a>
         
       </h1>
 

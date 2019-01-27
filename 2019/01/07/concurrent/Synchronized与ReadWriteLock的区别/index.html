@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="Synchronized与ReadWriteLock的区别"/>
+
+
+
+
+  <meta name="keywords" content="后台,java,mongo,mysql,vue,js,css,html" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Brooke-Paul">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.10.1" />
+
+
+
+<link rel="canonical" href="http://www.uuuup.vip/2019/01/07/concurrent/Synchronized与ReadWriteLock的区别/"/>
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/nprogress/nprogress.min.css" />
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.10.1" />
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
+</script>
+
+    <title> Synchronized与ReadWriteLock的区别 - Brooke-Paul </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Brooke-Paul</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
+          
+        </li>
+      </a>
+    
+      <a href="/tags">
+        <li class="mobile-menu-item">
+          
+          
+            标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Brooke-Paul</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            
+            
+              分类
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            
+            
+              标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Synchronized与ReadWriteLock的区别
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-01-07
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Synchronized"><span class="toc-text">Synchronized</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Synchronized与ReadWriteLock相同点"><span class="toc-text">Synchronized与ReadWriteLock相同点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Synchronized与ReadWriteLock区别"><span class="toc-text">Synchronized与ReadWriteLock区别</span></a></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="Synchronized"><a href="#Synchronized" class="headerlink" title="Synchronized"></a>Synchronized</h2><p><code>Synchronized</code>关键字是最基本的互斥同步，经过编译之后，会在同步块的前后形成<code>monitorenter</code>和<code>monitorexit</code>两个字节码指令，在和执行<code>monitorenter</code><br>指令时，首先会尝试获取对象的锁，把锁的计数器加一。相应的，在执行<code>monitorexit</code>指令时会将计数器的值减一，当计数器的值为零时锁会被释放。如果获取对象锁失败，那么当前线程就会阻塞等待，直到对象锁被另一个线程释放为止。</p>
+<h2 id="Synchronized与ReadWriteLock相同点"><a href="#Synchronized与ReadWriteLock相同点" class="headerlink" title="Synchronized与ReadWriteLock相同点"></a>Synchronized与ReadWriteLock相同点</h2><p>1.在多线程并发编程中都能实现同步，当某个方法被<code>Synchronized</code>修饰时，其它的线程无法访问当前方法，只有阻塞等待此方法同步完成后获取锁。<br>2.<code>ReadWriteLock</code>为读写锁，适用情况为读多写少的场景，和<code>Synchronized</code>一样可以锁住某个方法，但是得手动释放锁。<br>3.<code>Synchronized</code> 和 <code>ReadWriteLock</code> 都是可重入锁，即一个线程在获取某个锁后，还可以继续获取同一个锁。</p>
+<h2 id="Synchronized与ReadWriteLock区别"><a href="#Synchronized与ReadWriteLock区别" class="headerlink" title="Synchronized与ReadWriteLock区别"></a>Synchronized与ReadWriteLock区别</h2><p>在内置锁<code>Synchronized</code>中使用简洁，不需要每次使用后手动释放锁，而<code>ReadWriteLock</code>必须每次使用后手动释放锁。<br>在内置锁<code>Synchronized</code>中不能手动中断锁操作，而<code>ReadWriteLock</code>可以手动取消锁。<br><code>ReadWriteLock</code>是一种性能优化措施，执行读锁时效率比<code>Synchronized</code> 更高。</p>
+<p>总结：<br>显示锁的设置上要灵活些，比如定时，轮询，以及中断操作等，但是使用难度要大些，并且容易忽略锁的释放。<br>当<code>Synchronized</code>无法满足多线程同步时才使用<code>ReadWriteLock</code>，否则尽量使用<code>Synchronized</code>。<br><code>ReadWriteLock</code>使用场景，当允许多个读线程并发的访问被保护的对象时可以使用读写锁，提高程序可伸缩性。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/Lock/">Lock</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2019/01/10/concurrent/ThreadLocal的源码分析/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">ThreadLocal的源码分析</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2019/01/06/concurrent/显示锁的使用/">
+        <span class="next-text nav-default">锁的使用</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:gentle.taoxue@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://github.com/Brooke-Paul" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+
+    
+  </div>
+
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2019
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Brooke-Paul</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+  
+
+
+
+  
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/pjax/jquery.pjax.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/nprogress/nprogress.min.js"></script>
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.10.1"></script>
+
+  </body>
+</html>

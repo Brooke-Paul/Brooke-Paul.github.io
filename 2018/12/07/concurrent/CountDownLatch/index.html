@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+
+  <meta name="description" content="Java同步工具之CountDownLatch"/>
+
+
+
+
+  <meta name="keywords" content="后台,java,mongo,mysql,vue,js,css,html" />
+
+
+
+
+
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Brooke-Paul">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.10.1" />
+
+
+
+<link rel="canonical" href="http://www.uuuup.vip/2018/12/07/concurrent/CountDownLatch/"/>
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/nprogress/nprogress.min.css" />
+
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.10.1" />
+
+
+
+  
+
+
+
+  <script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":true};
+</script>
+
+    <title> Java同步工具之CountDownLatch - Brooke-Paul </title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Brooke-Paul</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    
+      <a href="/">
+        <li class="mobile-menu-item">
+          
+          
+            首页
+          
+        </li>
+      </a>
+    
+      <a href="/archives/">
+        <li class="mobile-menu-item">
+          
+          
+            归档
+          
+        </li>
+      </a>
+    
+      <a href="/categories/">
+        <li class="mobile-menu-item">
+          
+          
+            分类
+          
+        </li>
+      </a>
+    
+      <a href="/tags">
+        <li class="mobile-menu-item">
+          
+          
+            标签
+          
+        </li>
+      </a>
+    
+      <a href="/about">
+        <li class="mobile-menu-item">
+          
+          
+            关于
+          
+        </li>
+      </a>
+    
+  </ul>
+</nav>
+
+    <div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Brooke-Paul</a>
+</div>
+
+<nav class="site-navbar">
+  
+    <ul id="menu" class="menu">
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/">
+            
+            
+              首页
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            
+            
+              归档
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            
+            
+              分类
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/tags">
+            
+            
+              标签
+            
+          </a>
+        </li>
+      
+        <li class="menu-item">
+          <a class="menu-item-link" href="/about">
+            
+            
+              关于
+            
+          </a>
+        </li>
+      
+    </ul>
+  
+</nav>
+
+      </header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            
+  
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java同步工具之CountDownLatch
+        
+      </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2018-12-07
+        </span>
+        
+          <span class="post-category">
+            
+              <a href="/categories/Java并发/">Java并发</a>
+            
+          </span>
+        
+        
+      </div>
+    </header>
+
+    
+    
+  <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java并发之同步工具-CountDownLatch"><span class="toc-text">Java并发之同步工具 CountDownLatch</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CountDownLatch-概念"><span class="toc-text">CountDownLatch 概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CountDownLatch类的用法"><span class="toc-text">CountDownLatch类的用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CountDownLatch的不足"><span class="toc-text">CountDownLatch的不足</span></a></li></ol></li></ol>
+    </div>
+  </div>
+
+
+
+    <div class="post-content">
+      
+        <h2 id="Java并发之同步工具-CountDownLatch"><a href="#Java并发之同步工具-CountDownLatch" class="headerlink" title="Java并发之同步工具 CountDownLatch"></a>Java并发之同步工具 CountDownLatch</h2><h3 id="CountDownLatch-概念"><a href="#CountDownLatch-概念" class="headerlink" title="CountDownLatch 概念"></a>CountDownLatch 概念</h3><p><code>CountDownLatch</code> 是一种灵活的闭锁实现，它可以使一个或多个线程等待一组事件发生。闭锁状态包括一个计数器，该计数器初始化为一个正整数，表示需要等待的事件数量。<br><code>countDown</code> 方法递减计数器，表示事件发生。而<code>await</code>方法等待计数器达到零，这表示所有需要等待的事件都已经发生，可以执行自定义的操作。如果计数器的值非零，那么<code>await</code>会一直阻塞直到计数器为零，或者等待中的线程中断，或者等待超时。</p>
+<h3 id="CountDownLatch类的用法"><a href="#CountDownLatch类的用法" class="headerlink" title="CountDownLatch类的用法"></a><code>CountDownLatch</code>类的用法</h3><p>构造方法：<br><code>CountDownLatch(int count)</code> 构造方法参数指定了计数的次数。</p>
+<p>方法：<br><code>void await()</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断。<br><code>boolean await(long timeout, TimeUnit unit)</code>  使当前线程在锁存器倒计数至0之前一直等待，除非线程被中断或超出了指定的等待时间。<br><code>void countDown()</code>  计数减1。当计数为0，则释放所有等待的线程。<br><code>long getCount()</code>  返回当前计数。<br><code>String toString()</code>  返回标识此锁存器及其状态的字符串。 </p>
+<p>例如：使用了两个闭锁，分别表示起始门和结束门，当起始门的值为零时触发结束门的<code>countDown</code>，能使主线程高效的等待所有工作执行完成。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> nThreads = <span class="number">5</span>;</span><br><span class="line">        CountDownLatch countDownLatchStart = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</span><br><span class="line">        CountDownLatch countDownLatchEnd = <span class="keyword">new</span> CountDownLatch(nThreads);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (countDownLatchEnd) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart start..."</span>);</span><br><span class="line">                            <span class="keyword">super</span>.run();</span><br><span class="line">                            countDownLatchStart.await();</span><br><span class="line">                            System.out.println(currentThread().getName() + <span class="string">" countDownLatchStart end..."</span>);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            countDownLatchEnd.countDown();</span><br><span class="line">                            System.out.println(<span class="string">"current countDown count is..."</span> + countDownLatchEnd.getCount());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">        countDownLatchStart.countDown();</span><br><span class="line"></span><br><span class="line">        countDownLatchEnd.await();</span><br><span class="line">        <span class="keyword">long</span> endTime = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"countDownLatchEnd end...cost("</span> + (endTime - startTime) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行结果：</span></span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">0</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">4</span></span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">4</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">3</span></span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">3</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">2</span></span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">2</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">1</span></span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart start...</span><br><span class="line">Thread-<span class="number">1</span> countDownLatchStart end...</span><br><span class="line">current countDown count is...<span class="number">0</span></span><br><span class="line">countDownLatchEnd end...cost(<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="CountDownLatch的不足"><a href="#CountDownLatch的不足" class="headerlink" title="CountDownLatch的不足"></a>CountDownLatch的不足</h3><p><code>CountDownLatch</code>是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当<code>CountDownLatch</code>使用完毕后，它不能再次被使用。</p>
+
+      
+    </div>
+
+    
+      
+      
+
+
+
+      
+      
+    
+
+    
+      <footer class="post-footer">
+        
+          <div class="post-tags">
+            
+              <a href="/tags/CountDownLatch/">CountDownLatch</a>
+            
+          </div>
+        
+        
+        
+  <nav class="post-nav">
+    
+      <a class="prev" href="/2018/12/10/concurrent/CyclicBarrier/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Java同步工具之CyclicBarrier</span>
+        <span class="prev-text nav-mobile">上一篇</span>
+      </a>
+    
+    
+      <a class="next" href="/2018/12/07/concurrent/Semaphore/">
+        <span class="next-text nav-default">Java同步工具之Semaphore</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    
+  </nav>
+
+
+      </footer>
+    
+
+  </article>
+
+
+          </div>
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+
+  <div class="social-links">
+    
+      
+        
+          <a href="mailto:gentle.taoxue@gmail.com" class="iconfont icon-email" title="email"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+          <a href="https://github.com/Brooke-Paul" class="iconfont icon-github" title="github"></a>
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+
+    
+  </div>
+
+
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even">Even</a>
+  </span>
+
+  <span class="copyright-year">
+    
+    &copy; 
+     
+      2015 - 
+    
+    2019
+
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Brooke-Paul</span>
+  </span>
+</div>
+
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+
+    
+  
+  
+
+  
+
+
+
+    
+  
+
+
+
+  
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/pjax/jquery.pjax.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/nprogress/nprogress.min.js"></script>
+  
+
+
+    <script type="text/javascript" src="/js/src/even.js?v=2.10.1"></script>
+
+  </body>
+</html>
